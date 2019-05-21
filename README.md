@@ -44,6 +44,6 @@ Feel free to check out [my Discord server](https://invite.gg/LKDlive), everyone 
 
 Though this project is currently only coded and maintained by myself, I wouldn't have got to this point without the guidance of several other people and repositories. Here's some repos that have helped me out that you should also check out for yourself:
 
-* [Dlivetv-api-js](https://github.com/dlive-apis/dlivetv-api-js) - The origin of the earlier versions of this project and inspiration for this project. Created and maintained by the [DLive-APIs team](https://github.com/dlive-apis)
+* [Dlivetv-api-js](https://dlive.timedot.cc/node-js) - The origin of the earlier versions of this project and inspiration for this project. Created and maintained by the [DLive-APIs team](https://github.com/dlive-apis)
 * [dlive-js](https://www.npmjs.com/package/dlive-js) - A very diverse broad reaching API that ventures in to a LINO API as well as a Dlive API by the amazing [CreativeBuilds](https://dlive.tv/CreativeBuilds)
 * [DliveBot](https://dlivebot.com) - A nifty bot for Dlive that is easy to use and comes with tonnes of functionality, credits to [Dan Scott](https://dlive.tv/DanScott) for introducing me to this bot
