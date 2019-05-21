@@ -1,0 +1,25 @@
+{
+  "name": "dlivetv-api",
+  "version": "2.0.0",
+  "description": "A broad reaching API for DLive",
+  "main": "index.js",
+  "repository": "git+https://github.com/lkd70/dlivetv-api.git",
+  "keywords": [
+    "Dlive",
+    "Dlive.tv",
+    "DliveTv",
+    "api",
+    "LINO"
+  ],
+  "author": "LKD70",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lkd70/dlivetv-api/issues"
+  },
+  "homepage": "https://github.com/lkd70/dlivetv-api#readme",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "websocket": "^1.0.28"
+  },
+  "private": false
+}
