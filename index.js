@@ -36,6 +36,7 @@ const queries = {
 	RemoveModerator: (displayName) => `{"operationName":"RemoveModerator","variables":{"username":"${displayName}"},"query":"mutation RemoveModerator($username:String!){moderatorRemove(username:$username){err{code message __typename}__typename}}"}`,
 	SendStreamChatMessage: (linoUsername, message) => `{"operationName":"SendStreamChatMessage","variables":{"input":{"streamer":"${linoUsername}","message":"${message}","roomRole":"Moderator","subscribing":true}},"query":"mutation SendStreamChatMessage($input:SendStreamchatMessageInput!){sendStreamchatMessage(input:$input){err{code __typename}message{type ... on ChatText{id content ...VStreamChatSenderInfoFrag __typename}__typename}__typename}}fragment VStreamChatSenderInfoFrag on SenderInfo{subscribing role roomRole sender{id username displayname avatar partnerStatus __typename}__typename}"}`,
 	SetChatInterval: seconds => `{"operationName":"SetChatInterval","query":"mutation SetChatInterval($seconds:Int!){chatIntervalSet(seconds:$seconds){err{code __typename}__typename}}","variables":{"seconds":"${seconds}"}}`,
+	StreamChatModerators: (displayName, first, search) => `{"operationName":"StreamChatModerators","variables":{"displayname":"${displayName}","first":${first},"search":"${search}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"f9f495fec83d29d67b016c44d162869bff207f1dc53ba7436116743c4a1387be"}}}`,
 	StreamDonate: (count, type, permlink) => `{"operationName":"StreamDonate","query":"mutation StreamDonate($input:DonateInput!){donate(input:$input){id recentCount expireDuration err{code message __typename}__typename}}","variables":{"input":{"count":"${count}","type":"${type}","permlink":"${permlink}"}}}`,
 	StreamMessageSubscription: linoUsername => `{"type":"start","payload":{"variables":{"streamer":"${linoUsername}"},"operationName":"StreamMessageSubscription","query":"subscription StreamMessageSubscription($streamer:String!){streamMessageReceived(streamer:$streamer){type ... on ChatGift{id gift amount recentCount expireDuration ...VStreamChatSenderInfoFrag}... on ChatHost{id viewer...VStreamChatSenderInfoFrag}... on ChatSubscription{id month...VStreamChatSenderInfoFrag}... on ChatChangeMode{mode}... on ChatText{id content ...VStreamChatSenderInfoFrag}... on ChatFollow{id ...VStreamChatSenderInfoFrag}... on ChatDelete{ids}... on ChatBan{id ...VStreamChatSenderInfoFrag}... on ChatModerator{id ...VStreamChatSenderInfoFrag add}... on ChatEmoteAdd{id ...VStreamChatSenderInfoFrag emote}}}fragment VStreamChatSenderInfoFrag on SenderInfo{subscribing role roomRole sender{id username displayname avatar partnerStatus}}"}}`,
 	TopContributors: (displayName, first, rule) => `{"operationName":"TopContributors","variables":{"displayname":"${displayName}","first":"${first}","rule":"${rule}","queryStream":false},"query":"query TopContributors($displayname:String!,$rule:ContributionSummaryRule,$first:Int,$after:String,$queryStream:Boolean!){userByDisplayName(displayname:$displayname){id ...TopContributorsOfStreamerFrag @skip(if:$queryStream)livestream @include(if:$queryStream){...TopContributorsOfLivestreamFrag __typename}__typename}}fragment TopContributorsOfStreamerFrag on User{id topContributions(rule:$rule,first:$first,after:$after){pageInfo{endCursor hasNextPage __typename}list{amount contributor{id ...VDliveNameFrag ...VDliveAvatarFrag __typename}__typename}__typename}__typename}fragment VDliveNameFrag on User{displayname partnerStatus __typename}fragment VDliveAvatarFrag on User{avatar __typename}fragment TopContributorsOfLivestreamFrag on Livestream{id topContributions(first:$first,after:$after){pageInfo{endCursor hasNextPage __typename}list{amount contributor{id ...VDliveNameFrag ...VDliveAvatarFrag __typename}__typename}__typename}__typename}"}`,
@@ -404,6 +405,14 @@ module.exports = class Dlive extends EventEmitter {
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.PaybrosPrices()).then(res => {
 				res.data.errors === undefined ? resolve(res.data.data.globalInfo.paybrosPrices) : reject(res.data.errors);
+			});
+		});
+	}
+
+	getStreamModerators(displayName = this.displayName, first = 20, search = '') {
+		return new Promise((resolve, reject) => {
+			request(this.authKey, queries.StreamChatModerators(displayName, first, search)).then(res => {
+				res.data.errors === undefined ? resolve(res.data.data.userByDisplayName.chatModerators) : reject(res.data.errors);
 			});
 		});
 	}
