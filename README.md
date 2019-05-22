@@ -11,6 +11,8 @@
 
 [![npm](https://nodei.co/npm/dlivetv-api.png?compact=true)](https://nodei.co/npm/dlivetv-api.png?compact=true)
 
+[![Discord Banner 1](https://discordapp.com/api/guilds/580728133460688896/widget.png?style=banner2)](https://invite.gg/dlivetvapi)
+
 ## [Documentation](https://dlivetv-api.readme.io)
 
 ## Example
@@ -38,7 +40,7 @@ bot.on('ChatText', msg => {
 ## Support
 
 Need help with something? Or just want to hang out? Or maybe even offer a helping hand with the project?
-Feel free to check out [my Discord server](https://invite.gg/LKDlive), everyone is welcome to contribute to the project as long as they follow the eslint and editorconfig standards!
+Feel free to check out [my Discord server](https://invite.gg/dlivetvapi), everyone is welcome to contribute to the project as long as they follow the eslint and editorconfig standards!
 
 ## Credits
 
