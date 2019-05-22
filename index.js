@@ -63,10 +63,10 @@ const request = (authorization, data) => axios({
 module.exports = class Dlive extends EventEmitter {
 
 	/**
-	 * @param {string} displayName - Your Dlive username.
 	 * @param {string} authKey - Your authentication key
+	 * @param {string} displayName - Your Dlive username.
 	 */
-	constructor(displayName, authKey) {
+	constructor(authKey, displayName = null) {
 		super();
 		this.start(displayName, authKey);
 	}
@@ -238,6 +238,13 @@ module.exports = class Dlive extends EventEmitter {
 	 */
 	getLinoUsername(displayName = this.displayName) {
 		return this.getLivestreamPage(displayName).then(res => res.username).catch(err => err);
+	}
+
+	/**
+	 * @returns {Promise} - Returns Display Name of the authKey.
+	 */
+	getMeDisplayName() {
+		return this.getMeGlobal().then(res => res.me.displayname).catch(err => err);
 	}
 
 	/**
@@ -523,6 +530,7 @@ module.exports = class Dlive extends EventEmitter {
 		this.client = new client();
 		const _this = this;
 		_this.authKey = authKey;
+		if (displayName === null) displayName = await this.getMeDisplayName();
 		_this.displayName = displayName;
 		_this.linoUsername = await this.getLinoUsername(_this.displayName);
 
