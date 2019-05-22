@@ -6,7 +6,7 @@ const { client } = require('websocket');
 
 const queries = {
 	AddModerator: displayName => `{"operationName":"AddModerator","query":"mutation AddModerator($username:String!){moderatorAdd(username:$username){err{code __typename}__typename}}","variables":{"username":"${displayName}"}}`,
-	BanStreamChatUser: (linoUsername, displayName) => `{"operationName":"BanStreamChatUser","query":"mutation BanStreamChatUser($streamer:String!,$username:String!){streamchatUserBan(streamer:$streamer,username:$username){err{code message __typename}__typename}}","variables":{"streamer":"${linoUsername}","username":"${displayName}"}}`,
+	BanStreamChatUser: (username, streamer) => `{"operationName":"BanStreamChatUser","variables":{"streamer":"${streamer}","username":"${username}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"4eaeb20cba25dddc95df6f2acf8018b09a4a699cde468d1e8075d99bb00bacc4"}}}`,
 	BrowsePageSearchCategory: (first, text) => `{"operationName":"BrowsePageSearchCategory","query":"query BrowsePageSearchCategory($text:String!,$first:Int,$after:String){search(text:$text){trendingCategories(first:$first,after:$after){...HomeCategoriesFrag __typename}__typename}}fragment HomeCategoriesFrag on CategoryConnection{pageInfo{endCursor hasNextPage __typename}list{...VCategoryCardFrag __typename}__typename}fragment VCategoryCardFrag on Category{id backendID title imgUrl watchingCount __typename}","variables":{"first":"${first}","text":"${text}"}}`,
 	chatEmoteModeSet: (NoAllEmote, NoGlobalEmote, NoMineEmote) => `{"operationName":"chatEmoteModeSet","query":"mutation chatEmoteModeSet($emoteMode:SetEmoteModeInput!){emoteModeSet(emoteMode:$emoteMode){err{code message __typename}__typename}}","variables":{"emoteMode":{"NoAllEmote":"${NoAllEmote}","NoGlobalEmote":"${NoGlobalEmote}","NoMineEmote":"${NoMineEmote}"}}}`,
 	CoinbaseToken: item => `{"operationName":"CoinbaseToken","query":"mutation CoinbaseToken($item:CoinbaseItemType!){coinbaseToken(item:$item){token err{code message __typename}__typename}}","variables":{"item":"${item}"}}`,
@@ -84,16 +84,17 @@ module.exports = class Dlive extends EventEmitter {
 	}
 
 	/**
-	 * @param {string} displayName - Your Dlive username
+	 * @param {string} displayName - The Dlive username of who you intend to mute/ban.
 	 * @param {string} linoUsername - Lino username of the stream you wish to ban the displayName from. Defaults to your channel
 	 * @returns {Promise} - Was the displayName successfully banned from linoUsername's stream?
 	 */
-	async banStreamChatUser(displayName, linoUsername = this.linoUsername) {
-		if (displayName === null) throw new Error('banStreamChatUserInit: Please supply a DisplayName to mute.');
+	async ban(displayName, linoUsername = this.linoUsername) {
+		if (displayName === null) throw new Error('ban: Please supply a DisplayName to mute.');
 		if (!linoUsername) linoUsername = await this.getLinoUsername(this.displayName);
+		displayName = await this.getLinoUsername(displayName);
 		return new Promise((resolve, reject) => {
-			request(this.authKey, queries.BanStreamChatUser(linoUsername, displayName)).then(res => {
-				res.data.data.streamchatUserBan.err === undefined ? resolve(true) : reject(res.data.data.streamchatUserBan.err);
+			request(this.authKey, queries.BanStreamChatUser(displayName, linoUsername)).then(res => {
+				res.data.data.streamchatUserBan.err === null ? resolve(true) : reject(res.data.data.streamchatUserBan.err);
 			});
 		});
 	}

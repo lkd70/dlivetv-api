@@ -7,7 +7,7 @@
 [![npm version](https://img.shields.io/npm/v/dlivetv-api.svg?color=1BCC1B)](https://www.npmjs.com/package/dlivetv-api)
 [![code size](https://img.shields.io/github/languages/code-size/lkd70/dlivetv-api.svg?color=1BCC1B)](https://www.npmjs.com/package/dlivetv-api)
 
-![logo](https://raw.githubusercontent.com/lkd70/dlive-images/master/dlive_discord_ninja_api_300_300.png)
+[![logo](https://raw.githubusercontent.com/lkd70/dlive-images/master/dlive_discord_ninja_api_300_300.png)](https://www.npmjs.com/package/dlivetv-api)
 
 [![npm](https://nodei.co/npm/dlivetv-api.png?compact=true)](https://nodei.co/npm/dlivetv-api.png?compact=true)
 
