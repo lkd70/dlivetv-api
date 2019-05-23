@@ -251,8 +251,8 @@ module.exports = class Dlive extends EventEmitter {
 	 * @param {String} displayName - Dlive username to get the livestream page data of
 	 * @returns {Promise} - Livestream page data of the given displayName
 	 */
-	getLivestreamPage(displayName = this.displayName) {
-		if (!displayName) throw new TypeError('getLivestreamPage: A displayname is required. This is your Dlive username.');
+	async getLivestreamPage(displayName = this.displayName) {
+		if (!displayName) displayName = await this.getMeDisplayName();
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.LivestreamPage(displayName)).then(res => {
 				res.data.data.userByDisplayName.err === undefined ? resolve(res.data.data.userByDisplayName) : reject(res.data.data.userByDisplayName.err);
@@ -266,7 +266,8 @@ module.exports = class Dlive extends EventEmitter {
 	 * @param {string} sortedBy - Sort method, default: AZ
 	 * @returns {Promise} - list of followers
 	 */
-	getLivestreamProfileFollowers(displayName = this.displayName, first = 20, sortedBy = 'AZ') {
+	async getLivestreamProfileFollowers(displayName = this.displayName, first = 20, sortedBy = 'AZ') {
+		if (!displayName) displayName = await this.getMeDisplayName();
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.LivestreamProfileFollowers(displayName, first, sortedBy)).then(res => {
 				res.data.errors === undefined ? resolve(res.data.data.userByDisplayName.followers) : reject(res.data.errors);
@@ -280,7 +281,8 @@ module.exports = class Dlive extends EventEmitter {
 	 * @param {string} sortedBy - Sort method, default: AZ
 	 * @returns {Promise} - List of users who are following displayName
 	 */
-	getLivestreamProfileFollowing(displayName = this.displayName, first = 20, sortedBy = 'AZ') {
+	async getLivestreamProfileFollowing(displayName = this.displayName, first = 20, sortedBy = 'AZ') {
+		if (!displayName) displayName = await this.getMeDisplayName();
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.LivestreamProfileFollowing(displayName, first, sortedBy)).then(res => {
 				res.data.errors === undefined ? resolve(res.data.data.userByDisplayName.following) : reject(res.data.errors);
@@ -292,7 +294,8 @@ module.exports = class Dlive extends EventEmitter {
 	 * @param {String} displayName - Dlive username to return the replays of. Defaults to your channel
 	 * @returns {Promise} - List of displayNames replays
 	 */
-	getLivestreamProfileReplay(displayName = this.displayName) {
+	async getLivestreamProfileReplay(displayName = this.displayName) {
+		if (!displayName) displayName = await this.getMeDisplayName();
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.LivestreamProfileReplay(displayName)).then(res => {
 				res.data.errors === undefined ? resolve(res.data.data.userByDisplayName.pastBroadcasts) : reject(res.data.errors);
@@ -306,7 +309,8 @@ module.exports = class Dlive extends EventEmitter {
 	 * @param {String} sortedBy - What to sort the videos by. Defaults to 'Trending'
 	 * @returns {Promise} - List of displayNames videos
 	 */
-	getLivestreamProfileVideo(displayName = this.displayName, first = 20, sortedBy = 'Trending') {
+	async getLivestreamProfileVideo(displayName = this.displayName, first = 20, sortedBy = 'Trending') {
+		if (!displayName) displayName = await this.getMeDisplayName();
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.LivestreamProfileVideo(displayName, first, sortedBy)).then(res => {
 				res.data.errors === undefined ? resolve(res.data.data.userByDisplayName.videos) : reject(res.data.errors);
@@ -318,7 +322,8 @@ module.exports = class Dlive extends EventEmitter {
 	 * @param {String} displayName - Dlive username to check the chest of
 	 * @returns {Promise} - Chest winners list
 	 */
-	getLivestreamTreasureChestWinners(displayName = this.displayName) {
+	async getLivestreamTreasureChestWinners(displayName = this.displayName) {
+		if (!displayName) displayName = await this.getMeDisplayName();
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.LivestreamTreasureChestWinners(displayName)).then(res => {
 				res.data.errors === undefined ? resolve(res.data.data.userByDisplayName.treasureChest) : reject(res.data.errors);
@@ -417,7 +422,8 @@ module.exports = class Dlive extends EventEmitter {
 		});
 	}
 
-	getStreamModerators(displayName = this.displayName, first = 20, search = '') {
+	async getStreamModerators(displayName = this.displayName, first = 20, search = '') {
+		if (!displayName) displayName = await this.getMeDisplayName();
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.StreamChatModerators(displayName, first, search)).then(res => {
 				res.data.errors === undefined ? resolve(res.data.data.userByDisplayName.chatModerators) : reject(res.data.errors);
@@ -431,7 +437,8 @@ module.exports = class Dlive extends EventEmitter {
 	 * @param {String} rule - Rule of contributors to return. Defaults to 'ALL_TIME'
 	 * @returns {Promise} - List of top contributors
 	 */
-	getTopContributors(displayName = this.displayName, first = 3, rule = 'ALL_TIME') {
+	async getTopContributors(displayName = this.displayName, first = 3, rule = 'ALL_TIME') {
+		if (!displayName) displayName = await this.getMeDisplayName();
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.TopContributors(displayName, first, rule)).then(res => {
 				res.data.errors === undefined ? resolve(res.data.data.userByDisplayName.topContributions) : reject(res.data.errors);
