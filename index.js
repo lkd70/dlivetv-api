@@ -5,43 +5,42 @@ const axios = require('axios');
 const { client } = require('websocket');
 
 const queries = {
-	AddModerator: displayName => `{"operationName":"AddModerator","query":"mutation AddModerator($username:String!){moderatorAdd(username:$username){err{code __typename}__typename}}","variables":{"username":"${displayName}"}}`,
+	AddModerator: linoUsername => `{"operationName":"AddModerator","variables":{"username":"${linoUsername}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"b88215618f960182d73af646dac60f93a542e1d10ac93e14a988a38cb2fb87fd"}}}`,
 	BanStreamChatUser: (username, streamer) => `{"operationName":"BanStreamChatUser","variables":{"streamer":"${streamer}","username":"${username}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"4eaeb20cba25dddc95df6f2acf8018b09a4a699cde468d1e8075d99bb00bacc4"}}}`,
-	BrowsePageSearchCategory: (first, text) => `{"operationName":"BrowsePageSearchCategory","query":"query BrowsePageSearchCategory($text:String!,$first:Int,$after:String){search(text:$text){trendingCategories(first:$first,after:$after){...HomeCategoriesFrag __typename}__typename}}fragment HomeCategoriesFrag on CategoryConnection{pageInfo{endCursor hasNextPage __typename}list{...VCategoryCardFrag __typename}__typename}fragment VCategoryCardFrag on Category{id backendID title imgUrl watchingCount __typename}","variables":{"first":"${first}","text":"${text}"}}`,
-	CoinbaseToken: item => `{"operationName":"CoinbaseToken","query":"mutation CoinbaseToken($item:CoinbaseItemType!){coinbaseToken(item:$item){token err{code message __typename}__typename}}","variables":{"item":"${item}"}}`,
-	CreateXsollaToken: (item, language) => `{"operationName":"CreateXsollaToken","query":"mutation CreateXsollaToken($language:String,$item:XsollaItemType!){xsollaToken(language:$language,item:$item){token err{code __typename}__typename}}","variables":{"item":"${item}","language":"${language}"}}`,
-	DeleteChat: (linoUsername, id) => `{"operationName":"DeleteChat","query":"mutation DeleteChat($streamer:String!,$id:String!){chatDelete(streamer:$streamer,id:$id){err{code message __typename}__typename}}","variables":{"streamer":"${linoUsername}","id":"${id}"}}`,
-	EmoteBan: (linoUsername, emoteStr) => `{"operationName":"EmoteBan","query":"mutation EmoteBan($emoteStr:String!,$streamer:String!){emoteBan(emoteStr:$emoteStr,streamer:$streamer){err{code message __typename}__typename}}","variables":{"streamer":"${linoUsername}","emoteStr":"${emoteStr}"}}`,
-	EmoteDelete: (name, level, type) => `{"operationName":"EmoteDelete","query":"mutation EmoteDelete($input:DeleteEmoteInput!){deleteEmote(input:$input){err{code message __typename}__typename}}","variables":{"input":{"name":"${name}","level":"${level}","type":"${type}"}}}`,
-	EmoteSave: (name, level, type) => `{"operationName":"EmoteSave","query":"mutation EmoteSave($input:SaveEmoteInput!){saveEmote(input:$input){emote{name username sourceURL mimeType level type __typename}err{code message __typename}__typename}}","variables":{"input":{"name":"${name}","level":"${level}","myLevel":"${level}","type":"${type}"}}}`,
-	FollowUser: displayName => `{"operationName":"FollowUser","query":"mutation FollowUser($streamer:String!){follow(streamer:$streamer){err{code message __typename}__typename}}","variables":{"streamer":"${displayName}"}}`,
-	FollowingPageLivestreams: first => `{"operationName":"FollowingPageLivestreams","variables":{"first":"${first}"},"query":"query FollowingPageLivestreams($first:Int,$after:String){livestreamsFollowing(first:$first,after:$after){...FollowingLivestreamsFrag __typename}}fragment FollowingLivestreamsFrag on LivestreamConnection{pageInfo{endCursor hasNextPage __typename}list{...VLivestreamSnapFrag __typename}__typename}fragment VLivestreamSnapFrag on Livestream{id creator{username displayname ...VDliveAvatarFrag ...VDliveNameFrag __typename}title totalReward watchingCount thumbnailUrl lastUpdatedAt __typename}fragment VDliveAvatarFrag on User{avatar __typename}fragment VDliveNameFrag on User{displayname partnerStatus __typename}"}`,
-	GlobalInformation: () => '{"operationName":"GlobalInformation","variables":{},"query":"query GlobalInformation{globalInfo{languages{id backendID language code __typename}__typename}}"}',
-	LivestreamPage: displayName => `{"operationName":"LivestreamPage","query":"query LivestreamPage($displayname:String!,$add:Boolean!,$isLoggedIn:Boolean!){userByDisplayName(displayname:$displayname){id ...VDliveAvatarFrag ...VDliveNameFrag ...VFollowFrag ...VSubscriptionFrag banStatus about avatar myRoomRole @include(if:$isLoggedIn)isMe @include(if:$isLoggedIn)isSubscribing @include(if:$isLoggedIn)livestream{id permlink watchTime(add:$add)...LivestreamInfoFrag ...VVideoPlayerFrag __typename}hostingLivestream{id creator{...VDliveAvatarFrag displayname username __typename}...VVideoPlayerFrag __typename}...LivestreamProfileFrag __typename}}fragment LivestreamInfoFrag on Livestream{category{title imgUrl id backendID __typename}title watchingCount totalReward ...VDonationGiftFrag ...VPostInfoShareFrag __typename}fragment VDonationGiftFrag on Post{permlink creator{username __typename}__typename}fragment VPostInfoShareFrag on Post{permlink title content category{id backendID title __typename}__typename}fragment VDliveAvatarFrag on User{avatar __typename}fragment VDliveNameFrag on User{displayname partnerStatus __typename}fragment LivestreamProfileFrag on User{isMe @include(if:$isLoggedIn)canSubscribe private @include(if:$isLoggedIn){subscribers{totalCount __typename}__typename}videos{totalCount __typename}pastBroadcasts{totalCount __typename}followers{totalCount __typename}following{totalCount __typename}...ProfileAboutFrag __typename}fragment ProfileAboutFrag on User{id about __typename}fragment VVideoPlayerFrag on Livestream{disableAlert category{id title __typename}language{language __typename}__typename}fragment VFollowFrag on User{id username displayname isFollowing @include(if:$isLoggedIn)isMe @include(if:$isLoggedIn)followers{totalCount __typename}__typename}fragment VSubscriptionFrag on User{id username displayname isSubscribing @include(if:$isLoggedIn)canSubscribe isMe @include(if:$isLoggedIn)__typename}","variables":{"displayname":"${displayName}","add":false,"isLoggedIn":true}}`,
-	LivestreamProfileFollowers: (displayName, first, sortedBy) => `{"operationName":"LivestreamProfileFollowers","variables":{"displayname":"${displayName}","first":"${first}","isLoggedIn":true,"sortedBy":"${sortedBy}"},"query":"query LivestreamProfileFollowers($displayname:String!,$sortedBy:RelationSortOrder,$first:Int,$after:String,$isLoggedIn:Boolean!){userByDisplayName(displayname:$displayname){id displayname followers(sortedBy:$sortedBy,first:$first,after:$after){pageInfo{endCursor hasNextPage __typename}list{...VDliveAvatarFrag ...VDliveNameFrag ...VFollowFrag __typename}__typename}__typename}}fragment VDliveAvatarFrag on User{avatar __typename}fragment VDliveNameFrag on User{displayname partnerStatus __typename}fragment VFollowFrag on User{id username displayname isFollowing @include(if:$isLoggedIn)isMe @include(if:$isLoggedIn)followers{totalCount __typename}__typename}"}`,
-	LivestreamProfileFollowing: (displayName, first, sortedBy) => `{"operationName":"LivestreamProfileFollowing","variables":{"displayname":"${displayName}","first":"${first}","isLoggedIn":true,"sortedBy":"${sortedBy}"},"query":"query LivestreamProfileFollowing($displayname:String!,$sortedBy:RelationSortOrder,$first:Int,$after:String,$isLoggedIn:Boolean!){userByDisplayName(displayname:$displayname){id displayname following(sortedBy:$sortedBy,first:$first,after:$after){pageInfo{endCursor hasNextPage __typename}list{...VDliveAvatarFrag ...VDliveNameFrag ...VFollowFrag __typename}__typename}__typename}}fragment VDliveAvatarFrag on User{avatar __typename}fragment VDliveNameFrag on User{displayname partnerStatus __typename}fragment VFollowFrag on User{id username displayname isFollowing @include(if:$isLoggedIn)isMe @include(if:$isLoggedIn)followers{totalCount __typename}__typename}"}`,
-	LivestreamProfileReplay: displayName => `{"operationName":"LivestreamProfileReplay","variables":{"displayname":"${displayName}"},"query":"query LivestreamProfileReplay($displayname:String!,$first:Int,$after:String){userByDisplayName(displayname:$displayname){id pastBroadcasts(first:$first,after:$after){pageInfo{endCursor hasNextPage __typename}list{...ProfileReplaySnapFrag __typename}__typename}username __typename}}fragment ProfileReplaySnapFrag on PastBroadcast{permlink thumbnailUrl title totalReward createdAt viewCount playbackUrl creator{displayname __typename}resolution{resolution url __typename}__typename}"}`,
-	LivestreamProfileVideo: (displayName, sortedBy, first) => `{"operationName":"LivestreamProfileVideo","variables":{"displayname":"${displayName}","sortedBy":"${sortedBy}","first":"${first}"},"query":"query LivestreamProfileVideo($displayname:String!,$sortedBy:VideoSortOrder,$first:Int,$after:String){userByDisplayName(displayname:$displayname){id videos(sortedBy:$sortedBy,first:$first,after:$after){pageInfo{endCursor hasNextPage __typename}list{...ProfileVideoSnapFrag __typename}__typename}username __typename}}fragment ProfileVideoSnapFrag on Video{permlink thumbnailUrl titletotalReward createdAt viewCount length creator{displayname __typename}__typename}"}`,
-	LivestreamTreasureChestWinners: displayName => `{"operationName":"LivestreamTreasureChestWinners","variables":{"displayname":"${displayName}","isLoggedIn":true},"query":"query LivestreamTreasureChestWinners($displayname: String!,$isLoggedIn: Boolean!){userByDisplayName(displayname:$displayname){id ...TreasureChestWinnersFrag __typename}}fragment TreasureChestWinnersFrag on User{id username isMe @include(if:$isLoggedIn)treasureChest{lastGiveawayWin @include(if:$isLoggedIn)lastGiveawayWinners{value user{...VDliveAvatarFrag displayname __typename}__typename}__typename}__typename}fragment VDliveAvatarFrag on User{avatar __typename}"}`,
-	MeBalance: () => '{"operationName":"MeBalance","variables":{},"query":"query MeBalance {me {...MeBalanceFrag __typename}} fragment MeBalanceFrag on User {id\twallet {balance __typename} __typename}"}',
-	MeDashboard: () => '{"operationName":"MeDashboard","variables":{"isLoggedIn":true},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"620eb5c12e57ff0e3fea83915e796c6fb8fd26aec928c5fffcdd6154f77b374a"}}}',
-	MeGlobal: () => '{"operationName":"MeGlobal","variables":{},"query":"query MeGlobal{me{...MeGlobalFrag __typename}}fragment MeGlobalFrag on User{id username ...VDliveAvatarFrag displayname partnerStatus role private{accessToken insecure email phone nextDisplayNameChangeTime language showSubSettingTab __typename}...SettingsSubscribeFrag __typename}fragment VDliveAvatarFrag on User{avatar __typename}fragment SettingsSubscribeFrag on User{id subSetting{badgeColor badgeText textColor __typename}__typename}"}',
-	MeLivestream: () => '{"operationName":"MeLivestream","variables":{"isLoggedIn":true},"query":"query MeLivestream($isLoggedIn:Boolean!){me{...MeLivestreamFrag __typename}}fragment MeLivestreamFrag on User{id ...MeLivestreamChatroomFrag __typename}fragment MeLivestreamChatroomFrag on User{id username role ...MeEmoteFrag __typename}fragment MeEmoteFrag on User{id role @include(if:$isLoggedIn)emote{...EmoteMineFrag ...EmoteChannelFrag __typename}__typename}fragment EmoteMineFrag on AllEmotes{mine{list{name username sourceURL mimeType level type __typename}__typename}__typename}fragment EmoteChannelFrag on AllEmotes{channel{list{name username sourceURL mimeType level type __typename}__typename}__typename}"}',
-	MePartnerProgress: isNotGlobalPartner => `{"operationName":"MePartnerProgress","variables":{"isNotGlobalPartner":"${isNotGlobalPartner}"},"query":"query MePartnerProgress{me{...MePartnerProgressFrag __typename}} fragment MePartnerProgressFrag on User{id followers{totalCount __typename}private{previousStats{partnerStats{streamingHours streamingDays donationReceived __typename}contentBonus __typename}partnerProgress{partnerStatus current{followerCount streamingHours streamingDays donationReceived lockPoint __typename}target{followerCount streamingHours streamingDays donationReceived lockPoint __typename}eligible __typename}__typename}__typename}"}`,
-	MeSidebar: first => `{"operationName":"MeSidebar","variables":{"folowingFirst":"${first}"},"query":"query MeSidebar($folowingFirst:Int!){me{...MeSidebarFrag __typename}}fragment MeSidebarFrag on User{id username displayname wallet{balance __typename}private{followeeFeed(first:$folowingFirst){list{...VDliveAvatarFrag ...VDliveNameFrag livestream{id category{id title __typename}__typename}__typename}__typename}__typename}__typename}fragment VDliveAvatarFrag on User{avatar __typename}fragment VDliveNameFrag on User{displayname partnerStatus __typename}"}`,
-	MeSubscribing: first => `{"operationName":"MeSubscribing","variables":{"first":"${first}"},"query":"query MeSubscribing($first:Int!,$after:String){me{...MeSubscribingFrag __typename}}fragment MeSubscribingFrag on User{id private{subscribing(first:$first,after:$after){totalCount pageInfo{startCursor endCursor hasNextPage hasPreviousPage __typename}list{streamer{username displayname avatar partnerStatus __typename}tier status lastBilledDate subscribedAt month __typename}__typename}__typename}__typename}"}`,
-	PaybrosPrices: () => '{"operationName":"PaybrosPrices","variables":{},"query":"query PaybrosPrices{globalInfo{paybrosPrices{price88Points price288Points price688Points price1188Points price2888Points price7888Points price78888Points __typename}__typename}}"}',
-	PaymentAddEmail: email => `{"operationName":"PaymentAddEmail","variables":{"email":"${email}"},"query":"mutation PaymentAddEmail($email:String!){paymentEmailAdd(email:$email){err{code message __typename}__typename}}"}`,
-	RemoveModerator: (displayName) => `{"operationName":"RemoveModerator","variables":{"username":"${displayName}"},"query":"mutation RemoveModerator($username:String!){moderatorRemove(username:$username){err{code message __typename}__typename}}"}`,
-	SendStreamChatMessage: (linoUsername, message) => `{"operationName":"SendStreamChatMessage","variables":{"input":{"streamer":"${linoUsername}","message":"${message}","roomRole":"Moderator","subscribing":true}},"query":"mutation SendStreamChatMessage($input:SendStreamchatMessageInput!){sendStreamchatMessage(input:$input){err{code __typename}message{type ... on ChatText{id content ...VStreamChatSenderInfoFrag __typename}__typename}__typename}}fragment VStreamChatSenderInfoFrag on SenderInfo{subscribing role roomRole sender{id username displayname avatar partnerStatus __typename}__typename}"}`,
-	SetChatInterval: seconds => `{"operationName":"SetChatInterval","query":"mutation SetChatInterval($seconds:Int!){chatIntervalSet(seconds:$seconds){err{code __typename}__typename}}","variables":{"seconds":"${seconds}"}}`,
-	StreamChatModerators: (displayName, first, search) => `{"operationName":"StreamChatModerators","variables":{"displayname":"${displayName}","first":${first},"search":"${search}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"f9f495fec83d29d67b016c44d162869bff207f1dc53ba7436116743c4a1387be"}}}`,
+	BrowsePageSearchCategory: (first, text) => `{"operationName":"BrowsePageSearchCategory","variables":{"text":"${text}","first":${first}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"3e7231352e1802ba18027591ee411d2ca59030bdfd490b6d54c8d67971001ece"}}}`,
+	CoinbaseToken: item => `{"operationName":"CoinbaseToken","variables":{"item":"${item}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"ae57c263b4127fe95cf89f68dfb4863f26045b8ec7802f3ff32b0cf8a651b986"}}}`,
+	CreateXsollaToken: (item, language) => `{"operationName":"CreateXsollaToken","variables":{"language":${language},"item":"${item}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"62f447ba8aa988f69ffa92cc6a4bdaa618d11279e961823931dbf3d7d08ea886"}}}`,
+	DeleteChat: (linoUsername, id) => `{"operationName":"DeleteChat","variables":{"streamer":"${linoUsername}","id":"${id}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"7ae6f96161b89d9831dcf217f11f67c1edf5bb311d8819101345ed8eb38f6ed9"}}}`,
+	EmoteBan: (linoUsername, emoteStr) => `{"operationName":"EmoteBan","variables":{"emoteStr":"${emoteStr}","streamer":"${linoUsername}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"ba0c6a172eb57160fc681d477e65015275103ec023b60299943203ea75384fa8"}}}`,
+	EmoteDelete: (name, level, type) => `{"operationName":"EmoteDelete","variables":{"input":{"name":"${name}","level":"${level}","type":"${type}"}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"80cb5931bcaa0a880e81995278c65814d8ad1ae667119bef69fae61661c1c894"}}}`,
+	EmoteSave: (name, level, type) => `{"operationName":"EmoteSave","variables":{"input":{"name":"${name}","level":"${level}","myLevel":"${level}","type":"${type}"}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"51ce734e85a15e6a5eb3ac61583660219e7a5bfc42ad70c2d9c29be8ca721c83"}}}`,
+	FollowUser: displayName => `{"operationName":"FollowUser","variables":{"streamer":"${displayName}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"daf146d77e754b6b5a7acd945ff005ae028b33feaa3c79e04e71505190003a5d"}}}`,
+	FollowingPageLivestreams: first => `{"operationName":"FollowingPageLivestreams","variables":{"first":${first},"after":"4"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"160a6ac4f2f7d81fb8b9c41119961d5f33cc6bed53c0357a786194babb1ba3ea"}}}`,
+	GlobalInformation: () => '{"operationName":"GlobalInformation","variables":{},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"b9760d0a3a09e4c6efb8007d543d2e61cf31e8672ead0e37df0b192c65d42ea8"}}}',
+	LivestreamPage: displayName => `{"operationName":"LivestreamPage","variables":{"displayname":"${displayName}","add":false,"isLoggedIn":false},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"18e1c6e0e3f6a5165aff009fdef0581b54366c7d9ff4871f7879724c08b2468c"}}}`,
+	LivestreamProfileFollowers: (displayName, first, sortedBy) => `{"operationName":"LivestreamProfileFollowers","variables":{"displayname":"${displayName}","sortedBy":"${sortedBy}","first":${first},"isLoggedIn":true},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"594aa2d7a4e70735554973197cfdc11956accdaa3f0af7e7a6d9f6501b597842"}}}`,
+	LivestreamProfileFollowing: (displayName, first, sortedBy) => `{"operationName":"LivestreamProfileFollowing","variables":{"displayname":"${displayName}","sortedBy":"${sortedBy}","first":${first},"isLoggedIn":true},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"67d0a40d2062372fe6c4240e374dd4fa1c0e3ac843bb79ee48ad36458f98fb58"}}}`,
+	LivestreamProfileReplay: displayName => `{"operationName":"LivestreamProfileReplay","variables":{"displayname":"${displayName}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"7a1525ab66dfb3af5a2d5877db840b7222222665202aa034a51b95f7a7ed9fe0"}}}`,
+	LivestreamProfileVideo: (displayName, sortedBy, first) => `{"operationName":"LivestreamProfileVideo","variables":{"displayname":"${displayName}","sortedBy":"${sortedBy}","first":${first}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"df2b8483dbe1fb13ef47e3cf6af8d230571061d7038625587c7ed066bdbdddd3"}}}`,
+	LivestreamTreasureChestWinners: displayName => `{"operationName":"LivestreamTreasureChestWinners","variables":{"displayname":"${displayName}","isLoggedIn":true},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"d4bf8568e7ba9db7acc44269c2c08b18ccfb7a271c376eb4a5d6d9485acd51c3"}}}`,
+	MeBalance: () => '{"operationName":"MeBalance","variables":{},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"6e6794dcd570ff8ed544d45483971969db2c8e968a3a082645ae92efa124f3ec"}}}',
+	MeDashboard: () => '{"operationName":"MeDashboard","variables":{"isLoggedIn":true},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"8a4f67c0945b443f547d545c8d15e20548624308857e17b027f15d8f7cacfa97"}}}',
+	MeGlobal: () => '{"operationName":"MeGlobal","variables":{},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"c69723c66973bb8f544f11fcf375be71217ffd932ff72cc40f22252a076f84e2"}}}',
+	MeLivestream: () => '{"operationName":"MeLivestream","variables":{"isLoggedIn":true},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"73453911d90c67a6ba7d9fec2a5be05cc035c09d96b9b01016bd3e7210336cd6"}}}',
+	MePartnerProgress: isNotGlobalPartner => `{"operationName":"MePartnerProgress","variables":{"isNotGlobalPartner":${isNotGlobalPartner}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"2b7bb8b4437d68c4bc93d48af58b9a426b427b9003858235f7b13005aa85a86a"}}}`,
+	MeSidebar: first => `{"operationName":"MeSidebar","variables":{"folowingFirst":${first}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"394a0e72d9e488ae4812925c3c5d0b261de66110953c2759a7e4ea823a68cb81"}}}`,
+	MeSubscribing: first => `{"operationName":"MeSubscribing","variables":{"first":${first}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"7529cb69c79422d532d5c2ea5e80c066d15f383c8e9af98e2790a057876cec4b"}}}`,
+	PaybrosPrices: () => '{"operationName":"PaybrosPrices","variables":{},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"9f9c1b9eacf2617a5139ecf6eacdb678bf6ce2c5f02c3383c34bb299695e254e"}}}',
+	RemoveModerator: (linoUsername) => `{"operationName":"RemoveModerator","variables":{"username":"${linoUsername}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"ed89114819f8ac9d2a62e4260842dd6c7c32f5a3edfa564e3d4dda1eeb0ba7c6"}}}`,
+	SendStreamChatMessage: (linoUsername, message) => `{"operationName":"SendStreamChatMessage","variables":{"input":{"streamer":"${linoUsername}","message":"${message}","roomRole":"Owner","subscribing":true}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"c7cbec82e7b7a81698232874d2686f51bec3ac448194ec9dd4ff480beff9907c"}}}`,
+	SetChatInterval: seconds => `{"operationName":"SetChatInterval","variables":{"seconds":${seconds}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"353fa9498a47532deb97680ea72647cba960ab1a90bda4cdf78da7b2d4d3e4b0"}}}`,
+	StreamChatModerators: (displayName, first, search) => `{"operationName":"StreamChatModerators","variables":{"displayname":"${displayName}","first":${first},"search":"${search}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"aa2d1796cb4d043d5c96bee48f8399e4d2a62079b45f40bdc7063b08b9da9711"}}}`,
 	StreamDonate: (permLink, type, count) => `{"operationName":"StreamDonate","variables":{"input":{"permlink":"${permLink}","type":"${type}","count":${count}}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"42dbd0f6f50503b37cd48e4cc76aa7d0bb9f6c3f3dea48567951e856b4d93788"}}}`,
 	StreamMessageSubscription: linoUsername => `{"type":"start","payload":{"variables":{"streamer":"${linoUsername}"},"operationName":"StreamMessageSubscription","query":"subscription StreamMessageSubscription($streamer:String!){streamMessageReceived(streamer:$streamer){type ... on ChatGift{id gift amount recentCount expireDuration ...VStreamChatSenderInfoFrag}... on ChatHost{id viewer...VStreamChatSenderInfoFrag}... on ChatSubscription{id month...VStreamChatSenderInfoFrag}... on ChatChangeMode{mode}... on ChatText{id content ...VStreamChatSenderInfoFrag}... on ChatFollow{id ...VStreamChatSenderInfoFrag}... on ChatDelete{ids}... on ChatBan{id ...VStreamChatSenderInfoFrag}... on ChatModerator{id ...VStreamChatSenderInfoFrag add}... on ChatEmoteAdd{id ...VStreamChatSenderInfoFrag emote}}}fragment VStreamChatSenderInfoFrag on SenderInfo{subscribing role roomRole sender{id username displayname avatar partnerStatus}}"}}`,
-	TopContributors: (displayName, first, rule) => `{"operationName":"TopContributors","variables":{"displayname":"${displayName}","first":"${first}","rule":"${rule}","queryStream":false},"query":"query TopContributors($displayname:String!,$rule:ContributionSummaryRule,$first:Int,$after:String,$queryStream:Boolean!){userByDisplayName(displayname:$displayname){id ...TopContributorsOfStreamerFrag @skip(if:$queryStream)livestream @include(if:$queryStream){...TopContributorsOfLivestreamFrag __typename}__typename}}fragment TopContributorsOfStreamerFrag on User{id topContributions(rule:$rule,first:$first,after:$after){pageInfo{endCursor hasNextPage __typename}list{amount contributor{id ...VDliveNameFrag ...VDliveAvatarFrag __typename}__typename}__typename}__typename}fragment VDliveNameFrag on User{displayname partnerStatus __typename}fragment VDliveAvatarFrag on User{avatar __typename}fragment TopContributorsOfLivestreamFrag on Livestream{id topContributions(first:$first,after:$after){pageInfo{endCursor hasNextPage __typename}list{amount contributor{id ...VDliveNameFrag ...VDliveAvatarFrag __typename}__typename}__typename}__typename}"}`,
-	UnbanStreamChatUser: (displayName, linoUsername) => `{"operationName":"UnbanStreamChatUser","query":"mutation UnbanStreamChatUser($streamer:String!,$username:String!){streamchatUserUnban(streamer:$streamer,username:$username){err{code message __typename}__typename}}","variables":{"streamer":"${linoUsername}","username":"${displayName}"}}`,
-	UnfollowUser: displayName => `{"operationName":"UnfollowUser","query":"mutation UnfollowUser($streamer:String!){unfollow(streamer:$streamer){err{code message __typename}__typename}}","variables":{"streamer":"${displayName}"}}`,
-	chatEmoteModeSet: (NoAllEmote, NoGlobalEmote, NoMineEmote) => `{"operationName":"chatEmoteModeSet","query":"mutation chatEmoteModeSet($emoteMode:SetEmoteModeInput!){emoteModeSet(emoteMode:$emoteMode){err{code message __typename}__typename}}","variables":{"emoteMode":{"NoAllEmote":"${NoAllEmote}","NoGlobalEmote":"${NoGlobalEmote}","NoMineEmote":"${NoMineEmote}"}}}`,
+	TopContributors: (displayName, first, rule) => `{"operationName":"TopContributors","variables":{"displayname":"${displayName}","first":${first},"rule":"${rule}","queryStream":false},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"e0b23582f5f8fecb9ccdc607cc9a0b56572af37692915e6fe3ac4daf21bb389b"}}}`,
+	UnbanStreamChatUser: (displayName, linoUsername) => `{"operationName":"UnbanStreamChatUser","variables":{"streamer":"${linoUsername}","username":"${displayName}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"574e9a8db47ff719844359964d6108320e4d35f0378d7f983651d87b315d4008"}}}`,
+	UnfollowUser: displayName => `{"operationName":"UnfollowUser","variables":{"streamer":"${displayName}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"681ef3737bb34799ffe779b420db05b7f83bc8c3f17cdd17c7181bd7eca9859c"}}}`,
+	chatEmoteModeSet: (NoAllEmote, NoGlobalEmote, NoMineEmote) => `{"operationName":"chatEmoteModeSet","variables":{"emoteMode":{"NoMineEmote":${NoMineEmote},"NoGlobalEmote":${NoGlobalEmote},"NoAllEmote":${NoAllEmote}}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"e48c0db8189ca7bf1a36a3be94f142a1764f194e00dd190837f943b1e3009b9d"}}}`,
 };
 
 /**
@@ -50,11 +49,18 @@ const queries = {
  * @param {string} data - stringified JSON POST data
  * @returns {object} - Axios response object
  */
-const request = (authorization, data) => axios({
-	url: 'https://graphigo.prd.dlive.tv:443',
-	method: 'post',
-	headers: { authorization },
-	data
+const request = (authorization, data) => new Promise(resolve => {
+	axios({
+		url: 'https://graphigo.prd.dlive.tv:443',
+		method: 'post',
+		headers: { authorization },
+		data
+	}).then(res => {
+		if (res.errors !== undefined) throw new Error(res.errors);
+		resolve(res.data);
+	}).catch(e => {
+		throw new Error('Request error: ' + e);
+	});
 });
 
 /**
@@ -72,18 +78,6 @@ module.exports = class Dlive extends EventEmitter {
 	}
 
 	/**
-	 * @param {string} email - The Email address you wish to add
-	 * @returns {Promise} - adding email succeeded?
-	 */
-	addPaymentEmail(email) {
-		return new Promise((resolve, reject) => {
-			request(this.authKey, queries.PaymentAddEmail(email)).then(res => {
-				res.data.data.paymentEmailAdd.err === null ? resolve(true) : reject(res.data.data.paymentEmailAdd.err);
-			});
-		});
-	}
-
-	/**
 	 * @param {string} displayName - The Dlive username of who you intend to mute/ban.
 	 * @param {string} linoUsername - Lino username of the stream you wish to ban the displayName from. Defaults to your channel
 	 * @returns {Promise} - Was the displayName successfully banned from linoUsername's stream?
@@ -94,7 +88,7 @@ module.exports = class Dlive extends EventEmitter {
 		displayName = await this.getLinoUsername(displayName);
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.BanStreamChatUser(displayName, linoUsername)).then(res => {
-				res.data.data.streamchatUserBan.err === null ? resolve(true) : reject(res.data.data.streamchatUserBan.err);
+				res.data.streamchatUserBan.err === null ? resolve(true) : reject(res.data.streamchatUserBan.err);
 			});
 		});
 	}
@@ -115,7 +109,7 @@ module.exports = class Dlive extends EventEmitter {
 
 		return new Promise((resolve, reject) => {
 			request(this.authKey, data).then(res => {
-				res.errors === undefined ? resolve(res.data.data.search.trendingCategories) : reject(res.errors);
+				res.errors === undefined ? resolve(res.data.search.trendingCategories) : reject(res.errors);
 			});
 		});
 	}
@@ -131,7 +125,7 @@ module.exports = class Dlive extends EventEmitter {
 
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.deleteChat(id, linoUsername)).then(res => {
-				res.data.data.chatDelete.err === null ? resolve(true) : reject(res.data.data.chatDelete.err);
+				res.data.chatDelete.err === null ? resolve(true) : reject(res.data.chatDelete.err);
 			});
 		});
 	}
@@ -147,7 +141,7 @@ module.exports = class Dlive extends EventEmitter {
 
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.StreamDonate(permLink, type, count)).then(res => {
-				res.data.data.donate.err === null ? resolve(true) : reject(res.data.data.donate.err);
+				res.data.donate.err === null ? resolve(true) : reject(res.data.donate.err);
 			});
 		});
 	}
@@ -163,7 +157,7 @@ module.exports = class Dlive extends EventEmitter {
 
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.emoteBan(emoteStr, linoUsername)).then(res => {
-				res.data.data.emoteBan.err === null ? resolve(true) : reject(res.data.data.emoteBan.err);
+				res.data.emoteBan.err === null ? resolve(true) : reject(res.data.emoteBan.err);
 			});
 		});
 	}
@@ -177,7 +171,7 @@ module.exports = class Dlive extends EventEmitter {
 	emoteDelete(name, level, type = 'EMOTE') {
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.emoteDelete(name, level, type)).then(res => {
-				res.data.data.deleteEmote.err === null ? resolve(true) : reject(res.data.data.deleteEmote.err);
+				res.data.deleteEmote.err === null ? resolve(true) : reject(res.data.deleteEmote.err);
 			});
 		});
 	}
@@ -191,7 +185,7 @@ module.exports = class Dlive extends EventEmitter {
 	emoteSave(name, level, type) {
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.emoteSave(name, level, type)).then(res => {
-				res.data.data.saveEmote.err === null ? resolve(true) : reject(res.data.data.saveEmote.err);
+				res.data.saveEmote.err === null ? resolve(true) : reject(res.data.saveEmote.err);
 			});
 		});
 	}
@@ -205,7 +199,7 @@ module.exports = class Dlive extends EventEmitter {
 
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.followUser(displayName)).then(res => {
-				res.data.data.deleteEmote.err === null ? resolve(true) : reject(res.data.data.deleteEmote.err);
+				res.data.deleteEmote.err === null ? resolve(true) : reject(res.data.deleteEmote.err);
 			});
 		});
 
@@ -220,7 +214,7 @@ module.exports = class Dlive extends EventEmitter {
 
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.coinbaseToken(item)).then(res => {
-				res.data.data.coinbaseToken.err === null ? resolve(res.data.data.coinbaseToken.token) : reject(res.data.data.coinbaseToken.err);
+				res.data.coinbaseToken.err === null ? resolve(res.data.coinbaseToken.token) : reject(res.data.coinbaseToken.err);
 			});
 		});
 	}
@@ -232,7 +226,7 @@ module.exports = class Dlive extends EventEmitter {
 	getFollowingPageLivestreams(first = 20) {
 		return new Promise(resolve => {
 			request(this.authKey, queries.FollowingPageLivestreams(first)).then(res => {
-				resolve(res.data.data.livestreamsFollowing);
+				resolve(res.data.livestreamsFollowing);
 			});
 		});
 	}
@@ -243,7 +237,7 @@ module.exports = class Dlive extends EventEmitter {
 	getGlobalInformation() {
 		return new Promise(resolve => {
 			request(this.authKey, queries.GlobalInformation()).then(res => {
-				resolve(res.data.data.globalInfo);
+				resolve(res.data.globalInfo);
 			});
 		});
 	}
@@ -271,7 +265,7 @@ module.exports = class Dlive extends EventEmitter {
 		if (!displayName) displayName = await this.getMeDisplayName();
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.LivestreamPage(displayName)).then(res => {
-				res.data.data.userByDisplayName.err === undefined ? resolve(res.data.data.userByDisplayName) : reject(res.data.data.userByDisplayName.err);
+				res.data.userByDisplayName.err === undefined ? resolve(res.data.userByDisplayName) : reject(res.data.userByDisplayName.err);
 			});
 		});
 	}
@@ -286,7 +280,7 @@ module.exports = class Dlive extends EventEmitter {
 		if (!displayName) displayName = await this.getMeDisplayName();
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.LivestreamProfileFollowers(displayName, first, sortedBy)).then(res => {
-				res.data.errors === undefined ? resolve(res.data.data.userByDisplayName.followers) : reject(res.data.errors);
+				res.errors === undefined ? resolve(res.data.userByDisplayName.followers) : reject(res.errors);
 			});
 		});
 	}
@@ -301,7 +295,7 @@ module.exports = class Dlive extends EventEmitter {
 		if (!displayName) displayName = await this.getMeDisplayName();
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.LivestreamProfileFollowing(displayName, first, sortedBy)).then(res => {
-				res.data.errors === undefined ? resolve(res.data.data.userByDisplayName.following) : reject(res.data.errors);
+				res.errors === undefined ? resolve(res.data.userByDisplayName.following) : reject(res.errors);
 			});
 		});
 	}
@@ -314,7 +308,7 @@ module.exports = class Dlive extends EventEmitter {
 		if (!displayName) displayName = await this.getMeDisplayName();
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.LivestreamProfileReplay(displayName)).then(res => {
-				res.data.errors === undefined ? resolve(res.data.data.userByDisplayName.pastBroadcasts) : reject(res.data.errors);
+				res.errors === undefined ? resolve(res.data.userByDisplayName.pastBroadcasts) : reject(res.errors);
 			});
 		});
 	}
@@ -329,7 +323,7 @@ module.exports = class Dlive extends EventEmitter {
 		if (!displayName) displayName = await this.getMeDisplayName();
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.LivestreamProfileVideo(displayName, first, sortedBy)).then(res => {
-				res.data.errors === undefined ? resolve(res.data.data.userByDisplayName.videos) : reject(res.data.errors);
+				res.errors === undefined ? resolve(res.data.userByDisplayName.videos) : reject(res.errors);
 			});
 		});
 	}
@@ -342,7 +336,7 @@ module.exports = class Dlive extends EventEmitter {
 		if (!displayName) displayName = await this.getMeDisplayName();
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.LivestreamTreasureChestWinners(displayName)).then(res => {
-				res.data.errors === undefined ? resolve(res.data.data.userByDisplayName.treasureChest) : reject(res.data.errors);
+				res.errors === undefined ? resolve(res.data.userByDisplayName.treasureChest) : reject(res.errors);
 			});
 		});
 	}
@@ -353,7 +347,7 @@ module.exports = class Dlive extends EventEmitter {
 	getMeBalance() {
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.MeBalance()).then(res => {
-				res.data.errors === undefined ? resolve(res.data.data.me.wallet.balance) : reject(res.data.errors);
+				res.errors === undefined ? resolve(res.data.me.wallet.balance) : reject(res.errors);
 			});
 		});
 	}
@@ -364,7 +358,7 @@ module.exports = class Dlive extends EventEmitter {
 	getMeDashboard() {
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.MeDashboard()).then(res => {
-				res.data.errors === undefined ? resolve(res.data.data) : reject(res.data.errors);
+				res.errors === undefined ? resolve(res.data) : reject(res.errors);
 			});
 		});
 	}
@@ -375,7 +369,7 @@ module.exports = class Dlive extends EventEmitter {
 	getMeGlobal() {
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.MeGlobal()).then(res => {
-				res.data.errors === undefined ? resolve(res.data.data) : reject(res.data.errors);
+				res.errors === undefined ? resolve(res.data) : reject(res.errors);
 			});
 		});
 	}
@@ -386,7 +380,7 @@ module.exports = class Dlive extends EventEmitter {
 	getMeLivestream() {
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.MeLivestream()).then(res => {
-				res.data.errors === undefined ? resolve(res.data.data.me) : reject(res.data.errors);
+				res.errors === undefined ? resolve(res.data.me) : reject(res.errors);
 			});
 		});
 	}
@@ -398,7 +392,7 @@ module.exports = class Dlive extends EventEmitter {
 	getMePartnerProgress(isNotGlobalPartner = true) {
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.MePartnerProgress(isNotGlobalPartner)).then(res => {
-				res.data.errors === undefined ? resolve(res.data.data.me) : reject(res.data.errors);
+				res.errors === undefined ? resolve(res.data.me) : reject(res.errors);
 			});
 		});
 	}
@@ -410,7 +404,7 @@ module.exports = class Dlive extends EventEmitter {
 	getMeSidebar(first = 1) {
 		return new Promise(resolve => {
 			request(this.authKey, queries.MeSidebar(first)).then(res => {
-				resolve(res.data.data.me);
+				resolve(res.data.me);
 			});
 		});
 	}
@@ -422,7 +416,7 @@ module.exports = class Dlive extends EventEmitter {
 	getMeSubscribing(first = 20) {
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.MeSubscribing(first)).then(res => {
-				res.data.errors === undefined ? resolve(res.data.data.me.private.subscribing) : reject(res.data.errors);
+				res.errors === undefined ? resolve(res.data.me.private.subscribing) : reject(res.errors);
 			});
 		});
 	}
@@ -433,7 +427,7 @@ module.exports = class Dlive extends EventEmitter {
 	getPaybrosPrices() {
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.PaybrosPrices()).then(res => {
-				res.data.errors === undefined ? resolve(res.data.data.globalInfo.paybrosPrices) : reject(res.data.errors);
+				res.errors === undefined ? resolve(res.data.globalInfo.paybrosPrices) : reject(res.errors);
 			});
 		});
 	}
@@ -448,7 +442,7 @@ module.exports = class Dlive extends EventEmitter {
 		if (!displayName) displayName = await this.getMeDisplayName();
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.StreamChatModerators(displayName, first, search)).then(res => {
-				res.data.errors === undefined ? resolve(res.data.data.userByDisplayName.chatModerators) : reject(res.data.errors);
+				res.errors === undefined ? resolve(res.data.userByDisplayName.chatModerators) : reject(res.errors);
 			});
 		});
 	}
@@ -463,7 +457,7 @@ module.exports = class Dlive extends EventEmitter {
 		if (!displayName) displayName = await this.getMeDisplayName();
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.TopContributors(displayName, first, rule)).then(res => {
-				res.data.errors === undefined ? resolve(res.data.data.userByDisplayName.topContributions) : reject(res.data.errors);
+				res.errors === undefined ? resolve(res.data.userByDisplayName.topContributions) : reject(res.errors);
 			});
 		});
 	}
@@ -478,18 +472,18 @@ module.exports = class Dlive extends EventEmitter {
 
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.xsollaToken(item, language)).then(res => {
-				res.data.data.xsollaToken.err === null ? resolve(res.data.data.xsollaToken.token) : reject(res.data.data.xsollaToken.err);
+				res.data.xsollaToken.err === null ? resolve(res.data.xsollaToken.token) : reject(res.data.xsollaToken.err);
 			});
 		});
 	}
 
 	/**
-	 * @param {String} displayName - Dlive username to remove the moderator role of
+	 * @param {String} linoUsername - LINO username of the user to demote
 	 * @returns {Promise} - Was the moderator role removed succesfully?
 	 */
-	removeModerator(displayName) {
+	removeModerator(linoUsername) {
 		return new Promise((resolve, reject) => {
-			request(this.authKey, queries.removeModerator(displayName)).then(res => {
+			request(this.authKey, queries.removeModerator(linoUsername)).then(res => {
 				res.errors === undefined ? resolve(true) : reject(res.errors);
 			});
 		});
@@ -506,7 +500,7 @@ module.exports = class Dlive extends EventEmitter {
 
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.SendStreamChatMessage(linoUsername, message)).then(res => {
-				res.data.data.sendStreamchatMessage.err ? reject(res.data.data.sendStreamchatMessage.err) : resolve(res.data.data.sendStreamchatMessage.message.id);
+				res.data.sendStreamchatMessage.err ? reject(res.data.sendStreamchatMessage.err) : resolve(res.data.sendStreamchatMessage.message.id);
 			});
 		});
 
@@ -521,7 +515,7 @@ module.exports = class Dlive extends EventEmitter {
 	setChatEmoteMode(NoAllEmote = true, NoGlobalEmote = false, NoMineEmote = false) {
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.chatEmoteModeSet(NoAllEmote, NoGlobalEmote, NoMineEmote)).then(res => {
-				res.data.data.emoteModeSet.err ? reject(res.data.data.emoteModeSet.err) : resolve(true);
+				res.data.emoteModeSet.err ? reject(res.data.emoteModeSet.err) : resolve(true);
 			});
 		});
 	}
@@ -533,19 +527,19 @@ module.exports = class Dlive extends EventEmitter {
 	setChatInterval(seconds = 2) {
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.SetChatInterval(seconds)).then(res => {
-				res.data.data.chatIntervalSet.err ? reject(res.data.data.chatIntervalSet.err) : resolve(true);
+				res.data.chatIntervalSet.err ? reject(res.data.chatIntervalSet.err) : resolve(true);
 			});
 		});
 	}
 
 	/**
-	 * @param {String} displayName - Dlive username to add moderator of
+	 * @param {String} linoUsername - LINO username of the user you wish to promote
 	 * @returns {Promise} - Was the moderator role added successfully?
 	 */
-	setModerator(displayName) {
+	setModerator(linoUsername) {
 		return new Promise((resolve, reject) => {
-			request(this.authKey, queries.AddModerator(displayName)).then(res => {
-				res.data.data.moderatorAdd.err ? reject(res.data.data.moderatorAdd.err) : resolve(true);
+			request(this.authKey, queries.AddModerator(linoUsername)).then(res => {
+				res.data.moderatorAdd.err ? reject(res.data.moderatorAdd.err) : resolve(true);
 			});
 		});
 	}
@@ -594,7 +588,7 @@ module.exports = class Dlive extends EventEmitter {
 		if (!linoUsername) linoUsername = await this.getLinoUsername(this.displayName);
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.UnbanStreamChatUser(displayName, linoUsername)).then(res => {
-				res.data.data.streamchatUserBan.err ? reject(res.data.data.streamchatUserBan.err) : resolve(true);
+				res.data.streamchatUserBan.err ? reject(res.data.streamchatUserBan.err) : resolve(true);
 			});
 		});
 	}
@@ -606,7 +600,7 @@ module.exports = class Dlive extends EventEmitter {
 	unfollowUser(displayName) {
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.UnfollowUser(displayName)).then(res => {
-				res.data.data.unfollow.err ? reject(res.data.data.unfollow.err) : resolve(true);
+				res.data.unfollow.err ? reject(res.data.unfollow.err) : resolve(true);
 			});
 		});
 	}
