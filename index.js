@@ -18,6 +18,7 @@ const queries = {
 	FollowUser: displayName => `{"operationName":"FollowUser","variables":{"streamer":"${displayName}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"daf146d77e754b6b5a7acd945ff005ae028b33feaa3c79e04e71505190003a5d"}}}`,
 	FollowingPageLivestreams: first => `{"operationName":"FollowingPageLivestreams","variables":{"first":${first},"after":"4"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"160a6ac4f2f7d81fb8b9c41119961d5f33cc6bed53c0357a786194babb1ba3ea"}}}`,
 	GlobalInformation: () => '{"operationName":"GlobalInformation","variables":{},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"b9760d0a3a09e4c6efb8007d543d2e61cf31e8672ead0e37df0b192c65d42ea8"}}}',
+	HomePageCarousels: (count, userLanguageCode) => `{"operationName":"HomePageCarousels","variables":{"count":${count},"userLanguageCode":"${userLanguageCode}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"e4dffb4c3dba09ebcad2fe812605f51af363cf1469111f6f5b767e6b9e7a807a"}}}`,
 	HomePageCategories: (first, languageID) => `{"operationName":"HomePageCategories","variables":{"first":${first},"languageID":${languageID}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"386f2dbb71fa1d28e3c9bbff30e41beb7c09dd845b02dcf01c35856076e354dc"}}}`,
 	HomePageLeaderboard: () => '{"operationName":"HomePageLeaderboard","variables":{},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"b91545806fb283c94ee881686678709097134f08ff263b887b9837781f5a818a"}}}',
 	HomePageLivestream: (categoryID, first, languageID, ShowNSFW, userLanguageCode) => `{"operationName":"HomePageLivestream","variables":{"first":${first},"languageID":${languageID},"categoryID":${categoryID},"showNSFW":${ShowNSFW},"userLanguageCode":"${userLanguageCode}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"cd4d049ad52f012e129e2c7e7c7697d9b3c7a4acddf7ae27e004dceca1fe5df5"}}}`,
@@ -242,6 +243,19 @@ module.exports = class Dlive extends EventEmitter {
 		return new Promise(resolve => {
 			request(this.authKey, queries.GlobalInformation()).then(res => {
 				resolve(res.data.globalInfo);
+			});
+		});
+	}
+
+	/**
+	 * @param {Number} count - Amount of entries to return
+	 * @param {String} userLanguageCode - Language to return
+	 * @returns {Promise} - Returns array of livestreams
+	 */
+	getHomePageCarousels(count = 5, userLanguageCode = 'en') {
+		return new Promise((resolve, reject) => {
+			request(this.authKey, queries.HomePageCarousels(count, userLanguageCode)).then(res => {
+				res.data.carousels.err ? reject(res.data.carousels.err) : resolve(res.data.carousels);
 			});
 		});
 	}
