@@ -17,6 +17,8 @@ const queries = {
 	FollowUser: displayName => `{"operationName":"FollowUser","variables":{"streamer":"${displayName}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"daf146d77e754b6b5a7acd945ff005ae028b33feaa3c79e04e71505190003a5d"}}}`,
 	FollowingPageLivestreams: first => `{"operationName":"FollowingPageLivestreams","variables":{"first":${first},"after":"4"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"160a6ac4f2f7d81fb8b9c41119961d5f33cc6bed53c0357a786194babb1ba3ea"}}}`,
 	GlobalInformation: () => '{"operationName":"GlobalInformation","variables":{},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"b9760d0a3a09e4c6efb8007d543d2e61cf31e8672ead0e37df0b192c65d42ea8"}}}',
+	HomePageCategories: (first, languageID) => `{"operationName":"HomePageCategories","variables":{"first":${first},"languageID":${languageID}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"386f2dbb71fa1d28e3c9bbff30e41beb7c09dd845b02dcf01c35856076e354dc"}}}`,
+	HomePageLeaderboard: () => '{"operationName":"HomePageLeaderboard","variables":{},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"b91545806fb283c94ee881686678709097134f08ff263b887b9837781f5a818a"}}}',
 	HomePageLivestream: (categoryID, first, languageID, ShowNSFW, userLanguageCode) => `{"operationName":"HomePageLivestream","variables":{"first":${first},"languageID":${languageID},"categoryID":${categoryID},"showNSFW":${ShowNSFW},"userLanguageCode":"${userLanguageCode}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"cd4d049ad52f012e129e2c7e7c7697d9b3c7a4acddf7ae27e004dceca1fe5df5"}}}`,
 	LivestreamPage: displayName => `{"operationName":"LivestreamPage","variables":{"displayname":"${displayName}","add":false,"isLoggedIn":false},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"18e1c6e0e3f6a5165aff009fdef0581b54366c7d9ff4871f7879724c08b2468c"}}}`,
 	LivestreamProfileFollowers: (displayName, first, sortedBy) => `{"operationName":"LivestreamProfileFollowers","variables":{"displayname":"${displayName}","sortedBy":"${sortedBy}","first":${first},"isLoggedIn":true},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"594aa2d7a4e70735554973197cfdc11956accdaa3f0af7e7a6d9f6501b597842"}}}`,
@@ -41,9 +43,7 @@ const queries = {
 	TopContributors: (displayName, first, rule) => `{"operationName":"TopContributors","variables":{"displayname":"${displayName}","first":${first},"rule":"${rule}","queryStream":false},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"e0b23582f5f8fecb9ccdc607cc9a0b56572af37692915e6fe3ac4daf21bb389b"}}}`,
 	UnbanStreamChatUser: (displayName, linoUsername) => `{"operationName":"UnbanStreamChatUser","variables":{"streamer":"${linoUsername}","username":"${displayName}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"574e9a8db47ff719844359964d6108320e4d35f0378d7f983651d87b315d4008"}}}`,
 	UnfollowUser: displayName => `{"operationName":"UnfollowUser","variables":{"streamer":"${displayName}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"681ef3737bb34799ffe779b420db05b7f83bc8c3f17cdd17c7181bd7eca9859c"}}}`,
-	chatEmoteModeSet: (NoAllEmote, NoGlobalEmote, NoMineEmote) => `{"operationName":"chatEmoteModeSet","variables":{"emoteMode":{"NoMineEmote":${NoMineEmote},"NoGlobalEmote":${NoGlobalEmote},"NoAllEmote":${NoAllEmote}}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"e48c0db8189ca7bf1a36a3be94f142a1764f194e00dd190837f943b1e3009b9d"}}}`,
-	HomePageLeaderboard: () => '{"operationName":"HomePageLeaderboard","variables":{},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"b91545806fb283c94ee881686678709097134f08ff263b887b9837781f5a818a"}}}'
-
+	chatEmoteModeSet: (NoAllEmote, NoGlobalEmote, NoMineEmote) => `{"operationName":"chatEmoteModeSet","variables":{"emoteMode":{"NoMineEmote":${NoMineEmote},"NoGlobalEmote":${NoGlobalEmote},"NoAllEmote":${NoAllEmote}}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"e48c0db8189ca7bf1a36a3be94f142a1764f194e00dd190837f943b1e3009b9d"}}}`
 };
 
 /**
@@ -241,6 +241,19 @@ module.exports = class Dlive extends EventEmitter {
 		return new Promise(resolve => {
 			request(this.authKey, queries.GlobalInformation()).then(res => {
 				resolve(res.data.globalInfo);
+			});
+		});
+	}
+
+	/**
+	 * @param {Number} first - Amount of categories to return, default to 20
+	 * @param {String} languageID - ID of the language to filter by, defaults to null
+	 * @returns {Promise} - Returns an object with a list of categories
+	 */
+	getHomePageCategories(first = 20, languageID = null) {
+		return new Promise((resolve, reject) => {
+			request(this.authKey, queries.HomePageCategories(first, languageID)).then(res => {
+				res.data.categories.err ? reject(res.data.categories.err) : resolve(res.data.categories);
 			});
 		});
 	}
