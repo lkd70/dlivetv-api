@@ -1,6 +1,6 @@
 {
   "name": "dlivetv-api",
-  "version": "2.0.7",
+  "version": "2.0.8",
   "description": "A broad reaching API for DLive",
   "main": "index.js",
   "repository": "git+https://github.com/lkd70/dlivetv-api.git",
