@@ -19,7 +19,6 @@
   "homepage": "https://github.com/lkd70/dlivetv-api#readme",
   "dependencies": {
     "axios": "^0.18.0",
-    "websocket": "^1.0.28",
     "ws": "^7.0.0"
   },
   "private": false
