@@ -2,7 +2,7 @@
 
 const EventEmitter = require('events');
 const axios = require('axios');
-const { client } = require('websocket');
+const WebSocket = require('ws');
 
 const queries = {
 	AddModerator: linoUsername => `{"operationName":"AddModerator","variables":{"username":"${linoUsername}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"b88215618f960182d73af646dac60f93a542e1d10ac93e14a988a38cb2fb87fd"}}}`,
@@ -550,33 +550,31 @@ module.exports = class Dlive extends EventEmitter {
 	 * @returns {client} - New Dlive class instance
 	 */
 	async start(displayName, authKey) {
-		this.client = new client();
 		const _this = this;
 		_this.authKey = authKey;
 		if (displayName === null) displayName = await this.getMeDisplayName();
 		_this.displayName = displayName;
 		_this.linoUsername = await this.getLinoUsername(_this.displayName);
 
-		_this.client.on('connect', async conn => {
-			conn.sendUTF('{"type": "connection_init"}');
-			await conn.sendUTF(queries.StreamMessageSubscription(_this.linoUsername));
+		_this.client = new WebSocket('wss://graphigostream.prd.dlive.tv', [ 'graphql-ws' ]);
+		_this.client.on('open', () => {
+			_this.client.send('{"type": "connection_init"}');
+			_this.client.send(queries.StreamMessageSubscription(_this.linoUsername));
 
-			conn.on('message', message => {
-				if (message && message.type === 'utf8') {
-					message = JSON.parse(message.utf8Data);
-					if (message.payload !== undefined) {
-						const res = message.payload.data.streamMessageReceived['0'];
+			_this.client.on('message', msg => {
+				msg = JSON.parse(msg);
+				if (msg && msg.type === 'data') {
+					if (msg.payload !== undefined) {
+						const [ res ] = msg.payload.data.streamMessageReceived;
 						if (typeof res !== 'undefined') _this.emit(res.__typename, res);
 					}
 				}
 			});
-		});
 
-		_this.client.on('connectFailed', error => {
-			throw new Error(`Connect error: ${error.toString()}`);
+			_this.client.on('close', () => {
+				throw new Error('Disconnected');
+			});
 		});
-
-		_this.client.connect('wss://graphigostream.prd.dlive.tv');
 	}
 
 	/**
