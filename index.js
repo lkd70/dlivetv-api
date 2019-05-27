@@ -8,6 +8,7 @@ const queries = {
 	AddModerator: linoUsername => `{"operationName":"AddModerator","variables":{"username":"${linoUsername}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"b88215618f960182d73af646dac60f93a542e1d10ac93e14a988a38cb2fb87fd"}}}`,
 	BanStreamChatUser: (username, streamer) => `{"operationName":"BanStreamChatUser","variables":{"streamer":"${streamer}","username":"${username}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"4eaeb20cba25dddc95df6f2acf8018b09a4a699cde468d1e8075d99bb00bacc4"}}}`,
 	BrowsePageSearchCategory: (first, text) => `{"operationName":"BrowsePageSearchCategory","variables":{"text":"${text}","first":${first}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"3e7231352e1802ba18027591ee411d2ca59030bdfd490b6d54c8d67971001ece"}}}`,
+	ChatEmoteModeSet: (NoAllEmote, NoGlobalEmote, NoMineEmote) => `{"operationName":"chatEmoteModeSet","variables":{"emoteMode":{"NoMineEmote":${NoMineEmote},"NoGlobalEmote":${NoGlobalEmote},"NoAllEmote":${NoAllEmote}}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"e48c0db8189ca7bf1a36a3be94f142a1764f194e00dd190837f943b1e3009b9d"}}}`,
 	CoinbaseToken: item => `{"operationName":"CoinbaseToken","variables":{"item":"${item}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"ae57c263b4127fe95cf89f68dfb4863f26045b8ec7802f3ff32b0cf8a651b986"}}}`,
 	CreateXsollaToken: (item, language) => `{"operationName":"CreateXsollaToken","variables":{"language":${language},"item":"${item}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"62f447ba8aa988f69ffa92cc6a4bdaa618d11279e961823931dbf3d7d08ea886"}}}`,
 	DeleteChat: (linoUsername, id) => `{"operationName":"DeleteChat","variables":{"streamer":"${linoUsername}","id":"${id}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"7ae6f96161b89d9831dcf217f11f67c1edf5bb311d8819101345ed8eb38f6ed9"}}}`,
@@ -26,6 +27,7 @@ const queries = {
 	LivestreamProfileReplay: displayName => `{"operationName":"LivestreamProfileReplay","variables":{"displayname":"${displayName}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"7a1525ab66dfb3af5a2d5877db840b7222222665202aa034a51b95f7a7ed9fe0"}}}`,
 	LivestreamProfileVideo: (displayName, sortedBy, first) => `{"operationName":"LivestreamProfileVideo","variables":{"displayname":"${displayName}","sortedBy":"${sortedBy}","first":${first}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"df2b8483dbe1fb13ef47e3cf6af8d230571061d7038625587c7ed066bdbdddd3"}}}`,
 	LivestreamTreasureChestWinners: displayName => `{"operationName":"LivestreamTreasureChestWinners","variables":{"displayname":"${displayName}","isLoggedIn":true},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"d4bf8568e7ba9db7acc44269c2c08b18ccfb7a271c376eb4a5d6d9485acd51c3"}}}`,
+	LivestreamsLanguages: () => '{"operationName":"LivestreamsLanguages","variables":{},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"9eb5e755459bcf3336b50c2d83a6b44fd17f1c04fdda32f1a40c5ced959974ea"}}}',
 	MeBalance: () => '{"operationName":"MeBalance","variables":{},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"6e6794dcd570ff8ed544d45483971969db2c8e968a3a082645ae92efa124f3ec"}}}',
 	MeDashboard: () => '{"operationName":"MeDashboard","variables":{"isLoggedIn":true},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"8a4f67c0945b443f547d545c8d15e20548624308857e17b027f15d8f7cacfa97"}}}',
 	MeGlobal: () => '{"operationName":"MeGlobal","variables":{},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"c69723c66973bb8f544f11fcf375be71217ffd932ff72cc40f22252a076f84e2"}}}',
@@ -42,8 +44,7 @@ const queries = {
 	StreamMessageSubscription: linoUsername => `{"type":"start","payload":{"variables":{"streamer":"${linoUsername}"},"operationName":"StreamMessageSubscription","query":"subscription StreamMessageSubscription($streamer:String!){streamMessageReceived(streamer:$streamer){type ... on ChatGift{id gift amount recentCount expireDuration ...VStreamChatSenderInfoFrag}... on ChatHost{id viewer...VStreamChatSenderInfoFrag}... on ChatSubscription{id month...VStreamChatSenderInfoFrag}... on ChatChangeMode{mode}... on ChatText{id content ...VStreamChatSenderInfoFrag}... on ChatFollow{id ...VStreamChatSenderInfoFrag}... on ChatDelete{ids}... on ChatBan{id ...VStreamChatSenderInfoFrag}... on ChatModerator{id ...VStreamChatSenderInfoFrag add}... on ChatEmoteAdd{id ...VStreamChatSenderInfoFrag emote}}}fragment VStreamChatSenderInfoFrag on SenderInfo{subscribing role roomRole sender{id username displayname avatar partnerStatus}}"}}`,
 	TopContributors: (displayName, first, rule) => `{"operationName":"TopContributors","variables":{"displayname":"${displayName}","first":${first},"rule":"${rule}","queryStream":false},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"e0b23582f5f8fecb9ccdc607cc9a0b56572af37692915e6fe3ac4daf21bb389b"}}}`,
 	UnbanStreamChatUser: (displayName, linoUsername) => `{"operationName":"UnbanStreamChatUser","variables":{"streamer":"${linoUsername}","username":"${displayName}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"574e9a8db47ff719844359964d6108320e4d35f0378d7f983651d87b315d4008"}}}`,
-	UnfollowUser: displayName => `{"operationName":"UnfollowUser","variables":{"streamer":"${displayName}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"681ef3737bb34799ffe779b420db05b7f83bc8c3f17cdd17c7181bd7eca9859c"}}}`,
-	chatEmoteModeSet: (NoAllEmote, NoGlobalEmote, NoMineEmote) => `{"operationName":"chatEmoteModeSet","variables":{"emoteMode":{"NoMineEmote":${NoMineEmote},"NoGlobalEmote":${NoGlobalEmote},"NoAllEmote":${NoAllEmote}}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"e48c0db8189ca7bf1a36a3be94f142a1764f194e00dd190837f943b1e3009b9d"}}}`
+	UnfollowUser: displayName => `{"operationName":"UnfollowUser","variables":{"streamer":"${displayName}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"681ef3737bb34799ffe779b420db05b7f83bc8c3f17cdd17c7181bd7eca9859c"}}}`
 };
 
 /**
@@ -372,6 +373,17 @@ module.exports = class Dlive extends EventEmitter {
 	}
 
 	/**
+	 * @returns {Promise} - Array or Language objects
+	 */
+	getLivestreamsLanguages() {
+		return new Promise((resolve, reject) => {
+			request(this.authKey, queries.LivestreamsLanguages()).then(res => {
+				res.errors === undefined ? resolve(res.data.languages) : reject(res.errors);
+			});
+		});
+	}
+
+	/**
 	 * @param {String} displayName - Dlive username to check the chest of
 	 * @returns {Promise} - Chest winners list
 	 */
@@ -557,7 +569,7 @@ module.exports = class Dlive extends EventEmitter {
 	 */
 	setChatEmoteMode(NoAllEmote = true, NoGlobalEmote = false, NoMineEmote = false) {
 		return new Promise((resolve, reject) => {
-			request(this.authKey, queries.chatEmoteModeSet(NoAllEmote, NoGlobalEmote, NoMineEmote)).then(res => {
+			request(this.authKey, queries.ChatEmoteModeSet(NoAllEmote, NoGlobalEmote, NoMineEmote)).then(res => {
 				res.data.emoteModeSet.err ? reject(res.data.emoteModeSet.err) : resolve(true);
 			});
 		});
