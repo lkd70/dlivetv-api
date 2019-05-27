@@ -42,6 +42,7 @@ const queries = {
 	UnbanStreamChatUser: (displayName, linoUsername) => `{"operationName":"UnbanStreamChatUser","variables":{"streamer":"${linoUsername}","username":"${displayName}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"574e9a8db47ff719844359964d6108320e4d35f0378d7f983651d87b315d4008"}}}`,
 	UnfollowUser: displayName => `{"operationName":"UnfollowUser","variables":{"streamer":"${displayName}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"681ef3737bb34799ffe779b420db05b7f83bc8c3f17cdd17c7181bd7eca9859c"}}}`,
 	chatEmoteModeSet: (NoAllEmote, NoGlobalEmote, NoMineEmote) => `{"operationName":"chatEmoteModeSet","variables":{"emoteMode":{"NoMineEmote":${NoMineEmote},"NoGlobalEmote":${NoGlobalEmote},"NoAllEmote":${NoAllEmote}}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"e48c0db8189ca7bf1a36a3be94f142a1764f194e00dd190837f943b1e3009b9d"}}}`,
+	HomePageLeaderboard: () => '{"operationName":"HomePageLeaderboard","variables":{},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"b91545806fb283c94ee881686678709097134f08ff263b887b9837781f5a818a"}}}'
 
 };
 
@@ -240,6 +241,17 @@ module.exports = class Dlive extends EventEmitter {
 		return new Promise(resolve => {
 			request(this.authKey, queries.GlobalInformation()).then(res => {
 				resolve(res.data.globalInfo);
+			});
+		});
+	}
+
+	/**
+	 * @returns {Promise} - Returns home page leaderboard array
+	 */
+	getHomePageLeaderboard() {
+		return new Promise((resolve, reject) => {
+			request(this.authKey, queries.HomePageLeaderboard()).then(res => {
+				res.data.leaderboard.err ? reject(res.data.leaderboard.err) : resolve(res.data.leaderboard.list);
 			});
 		});
 	}
