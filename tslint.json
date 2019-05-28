@@ -1,0 +1,39 @@
+{
+	"defaultSeverity": "error",
+	"extends": [
+	  "tslint:recommended"
+	],
+	"jsRules": {},
+	"rules": {
+	  "indent": [true, "tabs", 2],
+	  "linebreak-style": [true, "LF"],
+	  "arrow-parens": [true, "ban-single-arg-parens"],
+	  "semicolon": [true, "always"],
+	  "no-console": [true, "log", "error"],
+	  "quotemark": [true, "single", "jsx-double"],
+	  "curly": [true, "ignore-same-line"],
+	  "ordered-imports": [
+		true,
+		{
+		  "import-sources-order": "any",
+		  "named-imports-order": "case-insensitive"
+		}
+	  ],
+	  "jsx-boolean-value": ["never"],
+	  "member-access": [true, "no-public"],
+	  "max-line-length": [false],
+	  "variable-name": [
+		true,
+		"check-format",
+		"allow-leading-underscore",
+		"allow-pascal-case",
+		"allow-snake-case"
+	  ]
+	},
+	"rulesDirectory": [],
+	"linterOptions": {
+		"exclude": [
+			"node_modules"
+		]
+	}
+  }

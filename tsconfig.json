@@ -1,0 +1,15 @@
+{
+"compilerOptions": {
+		"allowJs": true,
+    "outDir": "build",
+    "module": "commonjs",
+    "target": "es6",
+    "moduleResolution": "node",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+		"preserveConstEnums": true
+	},
+	"include": [
+			"./src/*"
+	]
+}
