@@ -40,6 +40,7 @@ const queries = {
 	RemoveModerator: (linoUsername: string) => `{"operationName":"RemoveModerator","variables":{"username":"${linoUsername}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"ed89114819f8ac9d2a62e4260842dd6c7c32f5a3edfa564e3d4dda1eeb0ba7c6"}}}`,
 	SendStreamChatMessage: (linoUsername: string, message: string) => `{"operationName":"SendStreamChatMessage","variables":{"input":{"streamer":"${linoUsername}","message":"${message}","roomRole":"Owner","subscribing":true}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"c7cbec82e7b7a81698232874d2686f51bec3ac448194ec9dd4ff480beff9907c"}}}`,
 	SetChatInterval: seconds => `{"operationName":"SetChatInterval","variables":{"seconds":${seconds}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"353fa9498a47532deb97680ea72647cba960ab1a90bda4cdf78da7b2d4d3e4b0"}}}`,
+	SetStreamTemplate: (title: string, ageRestriction: boolean, categoryID: number, disableAlert: boolean, languageID: number, thumbnailUrl: string) => `{"operationName":"SetStreamTemplate","variables":{"template":{"title":"${title}","ageRestriction":${ageRestriction},"categoryID":${categoryID},"languageID":${languageID},"thumbnailUrl":"${thumbnailUrl}","disableAlert":${disableAlert}}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"5e80f080f7a7e7425e0b1f1870849198c5d1acabc1595b766823acf26d6d9876"}}}`,
 	StreamChatModerators: (displayName: string, first: number, search: string) => `{"operationName":"StreamChatModerators","variables":{"displayname":"${displayName}","first":${first},"search":"${search}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"aa2d1796cb4d043d5c96bee48f8399e4d2a62079b45f40bdc7063b08b9da9711"}}}`,
 	StreamDonate: (permLink: string, type: string, count: number) => `{"operationName":"StreamDonate","variables":{"input":{"permlink":"${permLink}","type":"${type}","count":${count}}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"42dbd0f6f50503b37cd48e4cc76aa7d0bb9f6c3f3dea48567951e856b4d93788"}}}`,
 	StreamMessageSubscription: (linoUsername: string) => `{"type":"start","payload":{"variables":{"streamer":"${linoUsername}"},"operationName":"StreamMessageSubscription","query":"subscription StreamMessageSubscription($streamer:String!){streamMessageReceived(streamer:$streamer){type ... on ChatGift{id gift amount recentCount expireDuration ...VStreamChatSenderInfoFrag}... on ChatHost{id viewer...VStreamChatSenderInfoFrag}... on ChatSubscription{id month...VStreamChatSenderInfoFrag}... on ChatChangeMode{mode}... on ChatText{id content ...VStreamChatSenderInfoFrag}... on ChatFollow{id ...VStreamChatSenderInfoFrag}... on ChatDelete{ids}... on ChatBan{id ...VStreamChatSenderInfoFrag}... on ChatModerator{id ...VStreamChatSenderInfoFrag add}... on ChatEmoteAdd{id ...VStreamChatSenderInfoFrag emote}}}fragment VStreamChatSenderInfoFrag on SenderInfo{subscribing role roomRole sender{id username displayname avatar partnerStatus}}"}}`,
@@ -150,7 +151,7 @@ module.exports = class Dlive extends EventEmitter {
 	 * @param {Number} count - the amount of 'type' to send.
 	 * @returns {Promise} - Was the donation sent succesfully?
 	 */
-	donate(permLink: string, type: string = 'LEMON', count: number = 1): Promise<any> {
+	donate(permLink: string, type: string = 'LEMON', count: number = 1): Promise<boolean> {
 		if (!permLink) throw new Error('donate: permLink is required.');
 
 		return new Promise((resolve, reject) => {
@@ -626,6 +627,31 @@ module.exports = class Dlive extends EventEmitter {
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.AddModerator(linoUsername)).then(res => {
 				res.data.moderatorAdd.err ? reject(res.data.moderatorAdd.err) : resolve(true);
+			});
+		});
+	}
+
+	/**
+	 * @param {boolean} ageRestriction - NSFW?
+	 * @param {boolean} disableAlert - Don't alert followers?
+	 * @param {number} languageID - Stream language by ID
+	 * @param {number} categoryID - Stream category by ID
+	 * @param {string} title - Title of your stream
+	 * @param {string} thumbnailUrl - URL to the thumbnail for your VOD
+	 * @returns {Promise} - Was the dashboard updated?
+	 */
+	async setStreamTemplate(title, ageRestriction, categoryID, disableAlert, languageID, thumbnailUrl): Promise<any> {
+		return new Promise((resolve, reject) => {
+			this.getMeDashboard().then(dash => dash.me.private.streamTemplate).then(st => {
+				if (title === undefined) title = st.title;
+				if (ageRestriction === undefined) ageRestriction = st.ageRestriction;
+				if (categoryID === undefined) categoryID = st.category.backendID;
+				if (disableAlert === undefined) disableAlert = st.disableAlert;
+				if (languageID === undefined) languageID = st.language.backendID;
+				if (thumbnailUrl === undefined) thumbnailUrl = st.thumbnailUrl;
+				request(this.authKey, queries.SetStreamTemplate(title, ageRestriction, categoryID, disableAlert, languageID, thumbnailUrl)).then(res => {
+					res.data.streamTemplateSet.err ? reject(res.data.streamTemplateSet.err) : resolve(true);
+				});
 			});
 		});
 	}
