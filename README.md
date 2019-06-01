@@ -23,7 +23,7 @@ const Dlive = require('dlivetv-api');
 const key = 'MyReallyLongAuthenticationKey'; // Not sure where to get your auth key? Check the documentation link above!
 
 // Create a bot instence on LKD70's channel
-const bot = Dlive('LKD70', key);
+const bot = new Dlive(key, 'LKD70');
 
 // Monitor for 'ChatText' events
 bot.on('ChatText', msg => {
