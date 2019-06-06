@@ -3,11 +3,13 @@
 import * as EventEmitter from 'events';
 import axios from 'axios';
 import * as WebSocket from 'ws';
+import * as Interfaces from './interfaces';
 
 const queries = {
 	AddModerator: (linoUsername: string) => `{"operationName":"AddModerator","variables":{"username":"${linoUsername}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"b88215618f960182d73af646dac60f93a542e1d10ac93e14a988a38cb2fb87fd"}}}`,
 	BanStreamChatUser: (username: string, streamer: string) => `{"operationName":"BanStreamChatUser","variables":{"streamer":"${streamer}","username":"${username}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"4eaeb20cba25dddc95df6f2acf8018b09a4a699cde468d1e8075d99bb00bacc4"}}}`,
 	BrowsePageSearchCategory: (first: number, text: string) => `{"operationName":"BrowsePageSearchCategory","variables":{"text":"${text}","first":${first}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"3e7231352e1802ba18027591ee411d2ca59030bdfd490b6d54c8d67971001ece"}}}`,
+	CategoryLivestreamsPage: (id, first, languageID, showNSFW, order) => `{"operationName":"CategoryLivestreamsPage","variables":{"id":"${id}","opt":{"first":${first},"languageID":${languageID},"showNSFW":${showNSFW},"order":"${order}"}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"efe96506909157ff1230ba124a80bfca5412ebd503a0a256a6689d63614a4a90"}}}`,
 	ChatEmoteModeSet: (NoAllEmote, NoGlobalEmote, NoMineEmote) => `{"operationName":"chatEmoteModeSet","variables":{"emoteMode":{"NoMineEmote":${NoMineEmote},"NoGlobalEmote":${NoGlobalEmote},"NoAllEmote":${NoAllEmote}}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"e48c0db8189ca7bf1a36a3be94f142a1764f194e00dd190837f943b1e3009b9d"}}}`,
 	CoinbaseToken: (item: string) => `{"operationName":"CoinbaseToken","variables":{"item":"${item}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"ae57c263b4127fe95cf89f68dfb4863f26045b8ec7802f3ff32b0cf8a651b986"}}}`,
 	CreateXsollaToken: (item: string, language: string) => `{"operationName":"CreateXsollaToken","variables":{"language":${language},"item":"${item}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"62f447ba8aa988f69ffa92cc6a4bdaa618d11279e961823931dbf3d7d08ea886"}}}`,
@@ -124,7 +126,7 @@ module.exports = class Dlive extends EventEmitter {
 
 		return new Promise((resolve, reject) => {
 			request(this.authKey, data).then(res => {
-				res.errors === undefined ? resolve(res.data.search.trendingCategories) : reject(res.errors);
+				res.errors === undefined ? resolve(res.data.search.trendingCategories as Interfaces.IBrowsePageSearchCategory) : reject(res.errors);
 			});
 		});
 	}
@@ -220,6 +222,16 @@ module.exports = class Dlive extends EventEmitter {
 
 	}
 
+	getCategoryLivestreamsPage(id: string, first: number = 20, languageID: string = null, showNSFW: boolean = false, order: string = 'TRENDING'): Promise<any> {
+		if (id === null) throw new Error('getCategoryLivestreamsPage: Please specify the category ID');
+
+		return new Promise((resolve, reject) => {
+			request(this.authKey, queries.CategoryLivestreamsPage(id, first, languageID, showNSFW, order)).then(res => {
+				res.data.err === undefined ? resolve(res.data.category as Interfaces.ICategoryLivestreamsPage) : reject(res.data.category.err);
+			});
+		});
+	}
+
 	/**
 	 * @param {String} item - Name of the item you wish to generate a token for
 	 * @returns {Promise} - Returns a coinbase token
@@ -241,7 +253,7 @@ module.exports = class Dlive extends EventEmitter {
 	getFollowingPageLivestreams(first: number = 20): Promise<any> {
 		return new Promise(resolve => {
 			request(this.authKey, queries.FollowingPageLivestreams(first)).then(res => {
-				resolve(res.data.livestreamsFollowing);
+				resolve(res.data.livestreamsFollowing as Interfaces.IGetFollowingPageLivestreams);
 			});
 		});
 	}
@@ -252,7 +264,7 @@ module.exports = class Dlive extends EventEmitter {
 	getGlobalInformation(): Promise<any> {
 		return new Promise(resolve => {
 			request(this.authKey, queries.GlobalInformation()).then(res => {
-				resolve(res.data.globalInfo);
+				resolve(res.data.globalInfo as Interfaces.IGetGlobalInformation);
 			});
 		});
 	}
@@ -341,7 +353,7 @@ module.exports = class Dlive extends EventEmitter {
 		if (!displayName) displayName = await this.getMeDisplayName();
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.LivestreamPage(displayName)).then(res => {
-				res.data.userByDisplayName.err === undefined ? resolve(res.data.userByDisplayName) : reject(res.data.userByDisplayName.err);
+				res.data.userByDisplayName.err === undefined ? resolve(res.data.userByDisplayName as Interfaces.IGetLivestreamPage) : reject(res.data.userByDisplayName.err);
 			});
 		});
 	}
@@ -356,7 +368,7 @@ module.exports = class Dlive extends EventEmitter {
 		if (!displayName) displayName = await this.getMeDisplayName();
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.LivestreamProfileFollowers(displayName, first, sortedBy)).then(res => {
-				res.errors === undefined ? resolve(res.data.userByDisplayName.followers) : reject(res.errors);
+				res.errors === undefined ? resolve(res.data.userByDisplayName.followers as Interfaces.IGetLivestreamProfileFollowers) : reject(res.errors);
 			});
 		});
 	}
@@ -423,7 +435,7 @@ module.exports = class Dlive extends EventEmitter {
 		if (!displayName) displayName = await this.getMeDisplayName();
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.LivestreamTreasureChestWinners(displayName)).then(res => {
-				res.errors === undefined ? resolve(res.data.userByDisplayName.treasureChest) : reject(res.errors);
+				res.errors === undefined ? resolve(res.data.userByDisplayName.treasureChest as Interfaces.IGetLivestreamTreasureChestWinners) : reject(res.errors);
 			});
 		});
 	}
@@ -445,7 +457,7 @@ module.exports = class Dlive extends EventEmitter {
 	getMeDashboard(): Promise<any> {
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.MeDashboard()).then(res => {
-				res.errors === undefined ? resolve(res.data) : reject(res.errors);
+				res.errors === undefined ? resolve(res.data as Interfaces.IGetMeDashboard) : reject(res.errors);
 			});
 		});
 	}
@@ -467,7 +479,7 @@ module.exports = class Dlive extends EventEmitter {
 	getMeLivestream(): Promise<any> {
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.MeLivestream()).then(res => {
-				res.errors === undefined ? resolve(res.data.me) : reject(res.errors);
+				res.errors === undefined ? resolve(res.data.me as Interfaces.IGetMeLivestream) : reject(res.errors);
 			});
 		});
 	}
