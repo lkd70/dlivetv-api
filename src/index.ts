@@ -141,7 +141,7 @@ module.exports = class Dlive extends EventEmitter {
 		if (!linoUsername) linoUsername = await this.getLinoUsername(this.displayName);
 
 		return new Promise((resolve, reject) => {
-			request(this.authKey, queries.DeleteChat(id, linoUsername)).then(res => {
+			request(this.authKey, queries.DeleteChat(linoUsername, id)).then(res => {
 				res.data.chatDelete.err === null ? resolve(true) : reject(res.data.chatDelete.err);
 			});
 		});
