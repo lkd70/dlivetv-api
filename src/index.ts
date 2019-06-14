@@ -25,7 +25,7 @@ const queries = {
 	HomePageLeaderboard: () => '{"operationName":"HomePageLeaderboard","variables":{},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"b91545806fb283c94ee881686678709097134f08ff263b887b9837781f5a818a"}}}',
 	HomePageLivestream: (categoryID: string, first: number, languageID: string, ShowNSFW: boolean, userLanguageCode: string) => `{"operationName":"HomePageLivestream","variables":{"first":${first},"languageID":${languageID},"categoryID":${categoryID},"showNSFW":${ShowNSFW},"userLanguageCode":"${userLanguageCode}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"cd4d049ad52f012e129e2c7e7c7697d9b3c7a4acddf7ae27e004dceca1fe5df5"}}}`,
 	LivestreamPage: (displayName: string) => `{"operationName":"LivestreamPage","variables":{"displayname":"${displayName}","add":false,"isLoggedIn":true,"isMe":false},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"16c27f57ade6f946336e4882198479da8082cec1d4fa4874e6e18e2cc2096081"}}}`,
-	LivestreamProfileFollowers: (displayName: string, first: number, sortedBy: string) => `{"operationName":"LivestreamProfileFollowers","variables":{"displayname":"${displayName}","sortedBy":"${sortedBy}","first":${first},"isLoggedIn":true},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"594aa2d7a4e70735554973197cfdc11956accdaa3f0af7e7a6d9f6501b597842"}}}`,
+	LivestreamProfileFollowers: (displayName: string, first: number, sortedBy: string, after: number) => `{"operationName":"LivestreamProfileFollowers","variables":{"displayname":"${displayName}","${sortedBy}":"AZ","first":${first},"isLoggedIn":true,"after":"${after}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"594aa2d7a4e70735554973197cfdc11956accdaa3f0af7e7a6d9f6501b597842"}}}`,
 	LivestreamProfileFollowing: (displayName: string, first: number, sortedBy: string) => `{"operationName":"LivestreamProfileFollowing","variables":{"displayname":"${displayName}","sortedBy":"${sortedBy}","first":${first},"isLoggedIn":true},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"67d0a40d2062372fe6c4240e374dd4fa1c0e3ac843bb79ee48ad36458f98fb58"}}}`,
 	LivestreamProfileReplay: (displayName: string) => `{"operationName":"LivestreamProfileReplay","variables":{"displayname":"${displayName}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"7a1525ab66dfb3af5a2d5877db840b7222222665202aa034a51b95f7a7ed9fe0"}}}`,
 	LivestreamProfileVideo: (displayName: string, first: number, sortedBy: string) => `{"operationName":"LivestreamProfileVideo","variables":{"displayname":"${displayName}","sortedBy":"${sortedBy}","first":${first}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"df2b8483dbe1fb13ef47e3cf6af8d230571061d7038625587c7ed066bdbdddd3"}}}`,
@@ -361,13 +361,14 @@ module.exports = class Dlive extends EventEmitter {
 	/**
 	 * @param {String} displayName - Dlive username to return the followers of
 	 * @param {Number} first - Number of results to return
+	 * @param {Number} after - Starting index
 	 * @param {string} sortedBy - Sort method, default: AZ
 	 * @returns {Promise} - list of followers
 	 */
-	async getLivestreamProfileFollowers(displayName: string = this.displayName, first: number = 20, sortedBy: string = 'AZ'): Promise<any> {
+	async getLivestreamProfileFollowers(displayName: string = this.displayName, first: number = 20, after: number = null, sortedBy: string = 'AZ'): Promise<any> {
 		if (!displayName) displayName = await this.getMeDisplayName();
 		return new Promise((resolve, reject) => {
-			request(this.authKey, queries.LivestreamProfileFollowers(displayName, first, sortedBy)).then(res => {
+			request(this.authKey, queries.LivestreamProfileFollowers(displayName, first, sortedBy, after)).then(res => {
 				res.errors === undefined ? resolve(res.data.userByDisplayName.followers as Interfaces.IGetLivestreamProfileFollowers) : reject(res.errors);
 			});
 		});
