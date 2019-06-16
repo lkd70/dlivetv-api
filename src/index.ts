@@ -44,7 +44,7 @@ const queries = {
 	SetChatInterval: seconds => `{"operationName":"SetChatInterval","variables":{"seconds":${seconds}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"353fa9498a47532deb97680ea72647cba960ab1a90bda4cdf78da7b2d4d3e4b0"}}}`,
 	SetStreamTemplate: (title: string, ageRestriction: boolean, categoryID: number, disableAlert: boolean, languageID: number, thumbnailUrl: string) => `{"operationName":"SetStreamTemplate","variables":{"template":{"title":"${title}","ageRestriction":${ageRestriction},"categoryID":${categoryID},"languageID":${languageID},"thumbnailUrl":"${thumbnailUrl}","disableAlert":${disableAlert}}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"5e80f080f7a7e7425e0b1f1870849198c5d1acabc1595b766823acf26d6d9876"}}}`,
 	StreamChatModerators: (displayName: string, first: number, search: string) => `{"operationName":"StreamChatModerators","variables":{"displayname":"${displayName}","first":${first},"search":"${search}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"aa2d1796cb4d043d5c96bee48f8399e4d2a62079b45f40bdc7063b08b9da9711"}}}`,
-	StreamDonate: (permLink: string, type: string, count: number) => `{"operationName":"StreamDonate","variables":{"input":{"permlink":"${permLink}","type":"${type}","count":${count}}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"42dbd0f6f50503b37cd48e4cc76aa7d0bb9f6c3f3dea48567951e856b4d93788"}}}`,
+	StreamDonate: (permLink: string, type: string, count: number, message: string) => `{"operationName":"StreamDonate","variables":{"input":{"permlink":"${permLink}","type":"${type}","count":${count},"message":"${message}"}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"42dbd0f6f50503b37cd48e4cc76aa7d0bb9f6c3f3dea48567951e856b4d93788"}}}`,
 	StreamMessageSubscription: (linoUsername: string) => `{"type":"start","payload":{"variables":{"streamer":"${linoUsername}"},"operationName":"StreamMessageSubscription","query":"subscription StreamMessageSubscription($streamer:String!){streamMessageReceived(streamer:$streamer){type ... on ChatGift{id gift amount recentCount expireDuration ...VStreamChatSenderInfoFrag}... on ChatHost{id viewer...VStreamChatSenderInfoFrag}... on ChatSubscription{id month...VStreamChatSenderInfoFrag}... on ChatChangeMode{mode}... on ChatText{id content ...VStreamChatSenderInfoFrag}... on ChatFollow{id ...VStreamChatSenderInfoFrag}... on ChatDelete{ids}... on ChatBan{id ...VStreamChatSenderInfoFrag}... on ChatModerator{id ...VStreamChatSenderInfoFrag add}... on ChatEmoteAdd{id ...VStreamChatSenderInfoFrag emote}}}fragment VStreamChatSenderInfoFrag on SenderInfo{subscribing role roomRole sender{id username displayname avatar partnerStatus}}"}}`,
 	TopContributors: (displayName: string, first: number, rule: string) => `{"operationName":"TopContributors","variables":{"displayname":"${displayName}","first":${first},"rule":"${rule}","queryStream":false},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"e0b23582f5f8fecb9ccdc607cc9a0b56572af37692915e6fe3ac4daf21bb389b"}}}`,
 	UnbanStreamChatUser: (displayName: string, linoUsername: string) => `{"operationName":"UnbanStreamChatUser","variables":{"streamer":"${linoUsername}","username":"${displayName}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"574e9a8db47ff719844359964d6108320e4d35f0378d7f983651d87b315d4008"}}}`,
@@ -153,11 +153,11 @@ module.exports = class Dlive extends EventEmitter {
 	 * @param {Number} count - the amount of 'type' to send.
 	 * @returns {Promise} - Was the donation sent succesfully?
 	 */
-	donate(permLink: string, type: string = 'LEMON', count: number = 1): Promise<boolean> {
+	donate(permLink: string, type: string = 'LEMON', count: number = 1, message: string = ''): Promise<boolean> {
 		if (!permLink) throw new Error('donate: permLink is required.');
 
 		return new Promise((resolve, reject) => {
-			request(this.authKey, queries.StreamDonate(permLink, type, count)).then(res => {
+			request(this.authKey, queries.StreamDonate(permLink, type, count, message)).then(res => {
 				res.data.donate.err === null ? resolve(true) : reject(res.data.donate.err);
 			});
 		});
