@@ -29,6 +29,7 @@ const queries = {
 	LivestreamProfileFollowing: (displayName: string, first: number, sortedBy: string) => `{"operationName":"LivestreamProfileFollowing","variables":{"displayname":"${displayName}","sortedBy":"${sortedBy}","first":${first},"isLoggedIn":true},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"67d0a40d2062372fe6c4240e374dd4fa1c0e3ac843bb79ee48ad36458f98fb58"}}}`,
 	LivestreamProfileReplay: (displayName: string) => `{"operationName":"LivestreamProfileReplay","variables":{"displayname":"${displayName}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"7a1525ab66dfb3af5a2d5877db840b7222222665202aa034a51b95f7a7ed9fe0"}}}`,
 	LivestreamProfileVideo: (displayName: string, first: number, sortedBy: string) => `{"operationName":"LivestreamProfileVideo","variables":{"displayname":"${displayName}","sortedBy":"${sortedBy}","first":${first}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"df2b8483dbe1fb13ef47e3cf6af8d230571061d7038625587c7ed066bdbdddd3"}}}`,
+	LivestreamProfileWallet: (displayName: string, first: number, after: number) => `{"operationName":"LivestreamProfileWallet","variables":{"displayname":"${displayName}","first":${first},"isLoggedIn":true,"after":"${after}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"6e15826987e8b9189761cc820e692c2761a97b91b69e034ed9dc68daa582f5ee"}}}`,
 	LivestreamTreasureChestWinners: (displayName: string) => `{"operationName":"LivestreamTreasureChestWinners","variables":{"displayname":"${displayName}","isLoggedIn":true},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"d4bf8568e7ba9db7acc44269c2c08b18ccfb7a271c376eb4a5d6d9485acd51c3"}}}`,
 	LivestreamsLanguages: () => '{"operationName":"LivestreamsLanguages","variables":{},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"9eb5e755459bcf3336b50c2d83a6b44fd17f1c04fdda32f1a40c5ced959974ea"}}}',
 	MeBalance: () => '{"operationName":"MeBalance","variables":{},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"6e6794dcd570ff8ed544d45483971969db2c8e968a3a082645ae92efa124f3ec"}}}',
@@ -413,6 +414,21 @@ module.exports = class Dlive extends EventEmitter {
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.LivestreamProfileVideo(displayName, first, sortedBy)).then(res => {
 				res.errors === undefined ? resolve(res.data.userByDisplayName.videos) : reject(res.errors);
+			});
+		});
+	}
+
+	/**
+	 * @param {String} displayName - Dlive username to return the videos of. Defaults to your channel
+	 * @param {Number} first - Amount of videos to return, defaults to 20
+	 * @param {String} after - Starting point
+	 * @returns {Promise} - List of displayNames videos
+	 */
+	async getLivestreamProfileWallet(displayName: string = this.displayName, first: number = 20, after: number = null): Promise<any> {
+		if (!displayName) displayName = await this.getMeDisplayName();
+		return new Promise((resolve, reject) => {
+			request(this.authKey, queries.LivestreamProfileWallet(displayName, first, after)).then(res => {
+				res.errors === undefined ? resolve(res.data.userByDisplayName) : reject(res.errors);
 			});
 		});
 	}
