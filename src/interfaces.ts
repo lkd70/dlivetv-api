@@ -275,7 +275,6 @@ export interface IList {
 	__typename: string;
 }
 
-
 export interface ICategoryLivestreamsPage {
 	data: IData;
 }
