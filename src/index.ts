@@ -24,6 +24,7 @@ const queries = {
 	HomePageCategories: (first: number, languageID: string) => `{"operationName":"HomePageCategories","variables":{"first":${first},"languageID":${languageID}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"386f2dbb71fa1d28e3c9bbff30e41beb7c09dd845b02dcf01c35856076e354dc"}}}`,
 	HomePageLeaderboard: () => '{"operationName":"HomePageLeaderboard","variables":{},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"b91545806fb283c94ee881686678709097134f08ff263b887b9837781f5a818a"}}}',
 	HomePageLivestream: (categoryID: string, first: number, languageID: string, ShowNSFW: boolean, userLanguageCode: string) => `{"operationName":"HomePageLivestream","variables":{"first":${first},"languageID":${languageID},"categoryID":${categoryID},"showNSFW":${ShowNSFW},"userLanguageCode":"${userLanguageCode}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"cd4d049ad52f012e129e2c7e7c7697d9b3c7a4acddf7ae27e004dceca1fe5df5"}}}`,
+	LivestreamChatroomInfo: (displayName: string, limit: number) => `{"operationName":"LivestreamChatroomInfo","variables":{"displayname":"${displayName}","isLoggedIn":true,"limit":${limit}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"fc1839630d03c1ae4189910184ccebd1b35420896f46648e3d5eef81ff945315"}}}`,
 	LivestreamPage: (displayName: string) => `{"operationName":"LivestreamPage","variables":{"displayname":"${displayName}","add":false,"isLoggedIn":true,"isMe":false},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"04574dd80c2af59df37676b17ef0b4ffa963b254e8862b043168780aa94aa52f"}}}`,
 	LivestreamProfileFollowers: (displayName: string, first: number, sortedBy: string, after: number) => `{"operationName":"LivestreamProfileFollowers","variables":{"displayname":"${displayName}","${sortedBy}":"AZ","first":${first},"isLoggedIn":true,"after":"${after}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"594aa2d7a4e70735554973197cfdc11956accdaa3f0af7e7a6d9f6501b597842"}}}`,
 	LivestreamProfileFollowing: (displayName: string, first: number, sortedBy: string) => `{"operationName":"LivestreamProfileFollowing","variables":{"displayname":"${displayName}","sortedBy":"${sortedBy}","first":${first},"isLoggedIn":true},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"67d0a40d2062372fe6c4240e374dd4fa1c0e3ac843bb79ee48ad36458f98fb58"}}}`,
@@ -344,6 +345,15 @@ module.exports = class Dlive extends EventEmitter {
 			};
 		}
 		return this.getMeGlobal().then(res => res as IMeGlobalResponse).then(res => res.me.displayname).catch(err => err);
+	}
+
+	async getLivestreamChatroomInfo(displayName: string = this.displayName, limit: number = 20) {
+		if (!displayName) displayName = await this.getMeDisplayName();
+		return new Promise((resolve, reject) => {
+			request(this.authKey, queries.LivestreamChatroomInfo(displayName, limit)).then(res => {
+				res.data.userByDisplayName.err === undefined ? resolve(res.data.userByDisplayName) : reject(res.data.userByDisplayName.err);
+			});
+		});
 	}
 
 	/**
