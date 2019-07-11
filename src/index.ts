@@ -6,6 +6,7 @@ import * as WebSocket from 'ws';
 import * as Interfaces from './interfaces';
 
 const queries = {
+	AddGiftSub: (streamer: string, toUser: string) => `{"operationName":"AddGiftSub","variables":{"streamer":"${streamer}","toUser":"${toUser}","count":null},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"4f14249cf00d8548aa75c5f992a3ddc741833ee9b4317f5a4c897c1e5743666d"}}}`,
 	AddModerator: (linoUsername: string) => `{"operationName":"AddModerator","variables":{"username":"${linoUsername}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"b88215618f960182d73af646dac60f93a542e1d10ac93e14a988a38cb2fb87fd"}}}`,
 	BanStreamChatUser: (username: string, streamer: string) => `{"operationName":"BanStreamChatUser","variables":{"streamer":"${streamer}","username":"${username}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"4eaeb20cba25dddc95df6f2acf8018b09a4a699cde468d1e8075d99bb00bacc4"}}}`,
 	BrowsePageSearchCategory: (first: number, text: string) => `{"operationName":"BrowsePageSearchCategory","variables":{"text":"${text}","first":${first}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"3e7231352e1802ba18027591ee411d2ca59030bdfd490b6d54c8d67971001ece"}}}`,
@@ -222,6 +223,15 @@ module.exports = class Dlive extends EventEmitter {
 			});
 		});
 
+	}
+
+	async giftSub(streamer: string = this.displayName, toUser: string): Promise<any> {
+		if (!streamer) streamer = await this.getMeDisplayName();
+		return new Promise((resolve, reject) => {
+			request(this.authKey, queries.AddGiftSub(streamer, toUser)).then(res => {
+				res.data.giftSub.err === undefined ? resolve(res.data.giftSub) : reject(res.data.giftSub.err);
+			});
+		});
 	}
 
 	getCategoryLivestreamsPage(id: string, first: number = 20, languageID: string = null, showNSFW: boolean = false, order: string = 'TRENDING'): Promise<any> {
