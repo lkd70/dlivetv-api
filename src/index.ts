@@ -7,6 +7,7 @@ import * as Interfaces from './interfaces';
 
 const queries = {
 	AddGiftSub: (streamer: string, toUser: string) => `{"operationName":"AddGiftSub","variables":{"streamer":"${streamer}","toUser":"${toUser}","count":null},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"4f14249cf00d8548aa75c5f992a3ddc741833ee9b4317f5a4c897c1e5743666d"}}}`,
+	AddGiftSubClaim: (streamer: string) => `{"operationName":"AddGiftSubClaim","variables":{"streamer":"${streamer}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"21f80889b2afd31652216b1e80abb69467fa20853e8529bfbb78ed1fe0c9d069"}}}`,
 	AddModerator: (linoUsername: string) => `{"operationName":"AddModerator","variables":{"username":"${linoUsername}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"b88215618f960182d73af646dac60f93a542e1d10ac93e14a988a38cb2fb87fd"}}}`,
 	BanStreamChatUser: (username: string, streamer: string) => `{"operationName":"BanStreamChatUser","variables":{"streamer":"${streamer}","username":"${username}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"4eaeb20cba25dddc95df6f2acf8018b09a4a699cde468d1e8075d99bb00bacc4"}}}`,
 	BrowsePageSearchCategory: (first: number, text: string) => `{"operationName":"BrowsePageSearchCategory","variables":{"text":"${text}","first":${first}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"3e7231352e1802ba18027591ee411d2ca59030bdfd490b6d54c8d67971001ece"}}}`,
@@ -26,7 +27,7 @@ const queries = {
 	HomePageLeaderboard: () => '{"operationName":"HomePageLeaderboard","variables":{},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"b91545806fb283c94ee881686678709097134f08ff263b887b9837781f5a818a"}}}',
 	HomePageLivestream: (categoryID: string, first: number, languageID: string, ShowNSFW: boolean, userLanguageCode: string) => `{"operationName":"HomePageLivestream","variables":{"first":${first},"languageID":${languageID},"categoryID":${categoryID},"showNSFW":${ShowNSFW},"userLanguageCode":"${userLanguageCode}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"cd4d049ad52f012e129e2c7e7c7697d9b3c7a4acddf7ae27e004dceca1fe5df5"}}}`,
 	LivestreamChatroomInfo: (displayName: string, limit: number) => `{"operationName":"LivestreamChatroomInfo","variables":{"displayname":"${displayName}","isLoggedIn":true,"limit":${limit}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"fc1839630d03c1ae4189910184ccebd1b35420896f46648e3d5eef81ff945315"}}}`,
-	LivestreamPage: (displayName: string) => `{"operationName":"LivestreamPage","variables":{"displayname":"${displayName}","add":false,"isLoggedIn":true,"isMe":false},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"04574dd80c2af59df37676b17ef0b4ffa963b254e8862b043168780aa94aa52f"}}}`,
+	LivestreamPage: (displayName: string) => `{"operationName":"LivestreamPage","variables":{"displayname":"${displayName}","add":false,"isLoggedIn":true,"isMe":false},"query":"query LivestreamPage($displayname:String!,$add:Boolean!,$isLoggedIn:Boolean!){userByDisplayName(displayname:$displayname){id ...VDliveAvatarFrag ...VDliveNameFrag ...VFollowFrag ...VSubscriptionFrag banStatus about avatar myRoomRole @include(if:$isLoggedIn)isMe @include(if:$isLoggedIn)isSubscribing @include(if:$isLoggedIn)livestream{id permlink watchTime(add:$add)...LivestreamInfoFrag ...VVideoPlayerFrag __typename}hostingLivestream{id creator{...VDliveAvatarFrag displayname username __typename}...VVideoPlayerFrag __typename}...LivestreamProfileFrag __typename}}fragment LivestreamInfoFrag on Livestream{category{title imgUrl id backendID __typename}title watchingCount totalReward ...VDonationGiftFrag ...VPostInfoShareFrag __typename}fragment VDonationGiftFrag on Post{permlink creator{username __typename}__typename}fragment VPostInfoShareFrag on Post{permlink title content category{id backendID title __typename}__typename}fragment VDliveAvatarFrag on User{avatar __typename}fragment VDliveNameFrag on User{displayname partnerStatus __typename}fragment LivestreamProfileFrag on User{isMe @include(if:$isLoggedIn)canSubscribe private @include(if:$isLoggedIn){subscribers{totalCount __typename}__typename}videos{totalCount __typename}pastBroadcasts{totalCount __typename}followers{totalCount __typename}following{totalCount __typename}...ProfileAboutFrag __typename}fragment ProfileAboutFrag on User{id about __typename}fragment VVideoPlayerFrag on Livestream{disableAlert category{id title __typename}language{language __typename}__typename}fragment VFollowFrag on User{id username displayname isFollowing @include(if:$isLoggedIn)isMe @include(if:$isLoggedIn)followers{totalCount __typename}__typename}fragment VSubscriptionFrag on User{id username displayname isSubscribing @include(if:$isLoggedIn)canSubscribe isMe @include(if:$isLoggedIn)__typename}"}`,
 	LivestreamProfileFollowers: (displayName: string, first: number, sortedBy: string, after: number) => `{"operationName":"LivestreamProfileFollowers","variables":{"displayname":"${displayName}","${sortedBy}":"AZ","first":${first},"isLoggedIn":true,"after":"${after}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"594aa2d7a4e70735554973197cfdc11956accdaa3f0af7e7a6d9f6501b597842"}}}`,
 	LivestreamProfileFollowing: (displayName: string, first: number, sortedBy: string) => `{"operationName":"LivestreamProfileFollowing","variables":{"displayname":"${displayName}","sortedBy":"${sortedBy}","first":${first},"isLoggedIn":true},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"67d0a40d2062372fe6c4240e374dd4fa1c0e3ac843bb79ee48ad36458f98fb58"}}}`,
 	LivestreamProfileReplay: (displayName: string) => `{"operationName":"LivestreamProfileReplay","variables":{"displayname":"${displayName}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"7a1525ab66dfb3af5a2d5877db840b7222222665202aa034a51b95f7a7ed9fe0"}}}`,
@@ -234,6 +235,14 @@ module.exports = class Dlive extends EventEmitter {
 		});
 	}
 
+	async giftSubClaim(streamer: string): Promise<any> {
+		return new Promise((resolve, reject) => {
+			request(this.authKey, queries.AddGiftSubClaim(streamer)).then(res => {
+				res.errors ? reject(res.errors) : res.data.giftSubClaim.err === undefined ? resolve(res.data) : reject(res.data.giftSubClaim.err);
+			});
+		});
+	}
+
 	getCategoryLivestreamsPage(id: string, first: number = 20, languageID: string = null, showNSFW: boolean = false, order: string = 'TRENDING'): Promise<any> {
 		if (id === null) throw new Error('getCategoryLivestreamsPage: Please specify the category ID');
 
@@ -374,7 +383,7 @@ module.exports = class Dlive extends EventEmitter {
 		if (!displayName) displayName = await this.getMeDisplayName();
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.LivestreamPage(displayName)).then(res => {
-				res.data.userByDisplayName.err === undefined ? resolve(res.data.userByDisplayName as Interfaces.IGetLivestreamPage) : reject(res.data.userByDisplayName.err);
+				res.errors === undefined ? res.data.userByDisplayName.err === undefined ? resolve(res.data.userByDisplayName) : reject(res.data.userByDisplayName.err) : reject(res.errors);
 			});
 		});
 	}
