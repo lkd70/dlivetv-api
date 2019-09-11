@@ -383,7 +383,7 @@ module.exports = class Dlive extends EventEmitter {
 		if (!displayName) displayName = await this.getMeDisplayName();
 		return new Promise((resolve, reject) => {
 			request(this.authKey, queries.LivestreamPage(displayName)).then(res => {
-				res.errors === undefined ? res.data.userByDisplayName.err === undefined ? resolve(res.data.userByDisplayName) : reject(res.data.userByDisplayName.err) : reject(res.errors);
+				res.errors === undefined ? res.data.userByDisplayName !== null ? resolve(res.data.userByDisplayName) : reject(new Error('LivestreamPage query returned null')) : reject(res.errors);
 			});
 		});
 	}
