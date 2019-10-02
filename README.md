@@ -1,6 +1,5 @@
 # DLive-api
 
-[![dependencies](https://david-dm.org/lkd70/dlivetv-api.svg)](package.json)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/0841123e02614d64a04ddd72435ed2e6)](https://www.codacy.com/app/lkd70/dlivetv-api?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=lkd70/dlivetv-api&amp;utm_campaign=Badge_Grade)
 [![License: MIT](https://img.shields.io/badge/License-MIT-1BCC1B.svg)](https://opensource.org/licenses/MIT)
 [![npm downloads per week](https://img.shields.io/npm/dw/dlivetv-api.svg?color=1BCC1B)](https://www.npmjs.com/package/dlivetv-api)
