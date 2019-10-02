@@ -3,7 +3,6 @@
 .vscode
 node_modules/
 npm-debug.log*
-pnpm-lock.yaml
 tests/
 yarn-debug.log*
 yarn-error.log*
