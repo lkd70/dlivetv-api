@@ -6,10 +6,11 @@ import * as WebSocket from 'ws';
 import * as Interfaces from './interfaces';
 
 const queries = {
-	AddGiftSub: (streamer: string, toUser: string) => `{"operationName":"AddGiftSub","variables":{"streamer":"${streamer}","toUser":"${toUser}","count":null},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"4f14249cf00d8548aa75c5f992a3ddc741833ee9b4317f5a4c897c1e5743666d"}}}`,
-	AddGiftSubClaim: (streamer: string) => `{"operationName":"AddGiftSubClaim","variables":{"streamer":"${streamer}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"21f80889b2afd31652216b1e80abb69467fa20853e8529bfbb78ed1fe0c9d069"}}}`,
-	AddModerator: (linoUsername: string) => `{"operationName":"AddModerator","variables":{"username":"${linoUsername}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"b88215618f960182d73af646dac60f93a542e1d10ac93e14a988a38cb2fb87fd"}}}`,
-	BanStreamChatUser: (username: string, streamer: string) => `{"operationName":"BanStreamChatUser","variables":{"streamer":"${streamer}","username":"${username}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"4eaeb20cba25dddc95df6f2acf8018b09a4a699cde468d1e8075d99bb00bacc4"}}}`,
+	MeDisplayname: () => `{"query": "query{me{displayname}}"}`,
+	AddGiftSub: (streamer: string, toUser: string, count: number = 1) => `{"operationName":"QUERY","variables":{"streamer":"${streamer}", "toUser":"${toUser}", "count":${count}}, "query": "mutation AddGiftSub($streamer:String!,$toUser:String,$count:Int){giftSub(streamer:$streamer,toUser:$toUser,count:$count){err{code message}}}"}`,
+	AddGiftSubClaim: (streamer: string) => `{"operationName":"AddGiftSubClaim","variables":{"streamer":"${streamer}"}, "query": "mutation AddGiftSubClaim($streamer:String!){giftSubClaim(streamer:$streamer){err{code message}}}"}`,
+	AddModerator: (username: string, streamer: string) => `{"operationName":"AddModerator","variables":{"username":"${username}", "streamer":"${streamer}"}, "query": "mutation AddModerator($username:String!,$streamer:String){moderatorAdd(username:$username,streamer:$streamer){err{code}}}"}`,
+	BanStreamChatUser: (username: string, streamer: string) => `{"operationName":"BanStreamChatUser","variables":{"username":"${username}","streamer":"${streamer}"}, "query":"mutation BanStreamChatUser($streamer:String!,$username:String!){streamchatUserBan(streamer:$streamer,username:$username){err{code message}}}"}`,
 	BrowsePageSearchCategory: (first: number, text: string) => `{"operationName":"BrowsePageSearchCategory","variables":{"text":"${text}","first":${first}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"3e7231352e1802ba18027591ee411d2ca59030bdfd490b6d54c8d67971001ece"}}}`,
 	CategoryLivestreamsPage: (id, first, languageID, showNSFW, order) => `{"operationName":"CategoryLivestreamsPage","variables":{"id":"${id}","opt":{"first":${first},"languageID":${languageID},"showNSFW":${showNSFW},"order":"${order}"}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"efe96506909157ff1230ba124a80bfca5412ebd503a0a256a6689d63614a4a90"}}}`,
 	ChatEmoteModeSet: (NoAllEmote, NoGlobalEmote, NoMineEmote) => `{"operationName":"chatEmoteModeSet","variables":{"emoteMode":{"NoMineEmote":${NoMineEmote},"NoGlobalEmote":${NoGlobalEmote},"NoAllEmote":${NoAllEmote}}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"e48c0db8189ca7bf1a36a3be94f142a1764f194e00dd190837f943b1e3009b9d"}}}`,
@@ -29,7 +30,7 @@ const queries = {
 	LivestreamChatroomInfo: (displayName: string, limit: number) => `{"operationName":"LivestreamChatroomInfo","variables":{"displayname":"${displayName}","isLoggedIn":true,"limit":${limit}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"fc1839630d03c1ae4189910184ccebd1b35420896f46648e3d5eef81ff945315"}}}`,
 	LivestreamPage: (displayName: string) => `{"operationName":"LivestreamPage","variables":{"displayname":"${displayName}","add":false,"isLoggedIn":true,"isMe":false},"query":"query LivestreamPage($displayname:String!,$add:Boolean!,$isLoggedIn:Boolean!){userByDisplayName(displayname:$displayname){id ...VDliveAvatarFrag ...VDliveNameFrag ...VFollowFrag ...VSubscriptionFrag banStatus about avatar myRoomRole @include(if:$isLoggedIn)isMe @include(if:$isLoggedIn)isSubscribing @include(if:$isLoggedIn)livestream{id permlink watchTime(add:$add)...LivestreamInfoFrag ...VVideoPlayerFrag __typename}hostingLivestream{id creator{...VDliveAvatarFrag displayname username __typename}...VVideoPlayerFrag __typename}...LivestreamProfileFrag __typename}}fragment LivestreamInfoFrag on Livestream{category{title imgUrl id backendID __typename}title watchingCount totalReward ...VDonationGiftFrag ...VPostInfoShareFrag __typename}fragment VDonationGiftFrag on Post{permlink creator{username __typename}__typename}fragment VPostInfoShareFrag on Post{permlink title content category{id backendID title __typename}__typename}fragment VDliveAvatarFrag on User{avatar __typename}fragment VDliveNameFrag on User{displayname partnerStatus __typename}fragment LivestreamProfileFrag on User{isMe @include(if:$isLoggedIn)canSubscribe private @include(if:$isLoggedIn){subscribers{totalCount __typename}__typename}videos{totalCount __typename}pastBroadcasts{totalCount __typename}followers{totalCount __typename}following{totalCount __typename}...ProfileAboutFrag __typename}fragment ProfileAboutFrag on User{id about __typename}fragment VVideoPlayerFrag on Livestream{disableAlert category{id title __typename}language{language __typename}__typename}fragment VFollowFrag on User{id username displayname isFollowing @include(if:$isLoggedIn)isMe @include(if:$isLoggedIn)followers{totalCount __typename}__typename}fragment VSubscriptionFrag on User{id username displayname isSubscribing @include(if:$isLoggedIn)canSubscribe isMe @include(if:$isLoggedIn)__typename}"}`,
 	LivestreamProfileFollowers: (displayName: string, first: number, sortedBy: string, after: number) => `{"operationName":"LivestreamProfileFollowers","variables":{"displayname":"${displayName}","${sortedBy}":"AZ","first":${first},"isLoggedIn":true,"after":"${after}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"594aa2d7a4e70735554973197cfdc11956accdaa3f0af7e7a6d9f6501b597842"}}}`,
-	LivestreamProfileFollowing: (displayName: string, first: number, sortedBy: string) => `{"operationName":"LivestreamProfileFollowing","variables":{"displayname":"${displayName}","sortedBy":"${sortedBy}","first":${first},"isLoggedIn":true},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"67d0a40d2062372fe6c4240e374dd4fa1c0e3ac843bb79ee48ad36458f98fb58"}}}`,
+	LivestreamProfileFollowing: (displayName: string, first: number, sortedBy: string, after: number) => `{"query":"query($displayname:String!,$first:Int!,$sortedBy:RelationSortOrder,$after:String){userByDisplayName(displayname:$displayname){followers(first:$first,after:$after,sortedBy:$sortedBy){list{id username displayname avatar}pageInfo{hasNextPage endCursor}}}}","variables":{"displayname":"${displayName}", "first":${first}, "sortedBy":"${sortedBy}","after":"${after}"}}`,
 	LivestreamProfileReplay: (displayName: string) => `{"operationName":"LivestreamProfileReplay","variables":{"displayname":"${displayName}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"7a1525ab66dfb3af5a2d5877db840b7222222665202aa034a51b95f7a7ed9fe0"}}}`,
 	LivestreamProfileVideo: (displayName: string, first: number, sortedBy: string) => `{"operationName":"LivestreamProfileVideo","variables":{"displayname":"${displayName}","sortedBy":"${sortedBy}","first":${first}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"df2b8483dbe1fb13ef47e3cf6af8d230571061d7038625587c7ed066bdbdddd3"}}}`,
 	LivestreamProfileWallet: (displayName: string, first: number, after: number) => `{"operationName":"LivestreamProfileWallet","variables":{"displayname":"${displayName}","first":${first},"isLoggedIn":true,"after":"${after}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"33f93541f9c5eda40a8b54c152246f953564c441361eb3b729373ae89165b798"}}}`,
@@ -48,7 +49,7 @@ const queries = {
 	SetChatInterval: seconds => `{"operationName":"SetChatInterval","variables":{"seconds":${seconds}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"353fa9498a47532deb97680ea72647cba960ab1a90bda4cdf78da7b2d4d3e4b0"}}}`,
 	SetStreamTemplate: (title: string, ageRestriction: boolean, categoryID: number, disableAlert: boolean, languageID: number, thumbnailUrl: string) => `{"operationName":"SetStreamTemplate","variables":{"template":{"title":"${title}","ageRestriction":${ageRestriction},"categoryID":${categoryID},"languageID":${languageID},"thumbnailUrl":"${thumbnailUrl}","disableAlert":${disableAlert}}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"5e80f080f7a7e7425e0b1f1870849198c5d1acabc1595b766823acf26d6d9876"}}}`,
 	StreamChatModerators: (displayName: string, first: number, search: string) => `{"operationName":"StreamChatModerators","variables":{"displayname":"${displayName}","first":${first},"search":"${search}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"aa2d1796cb4d043d5c96bee48f8399e4d2a62079b45f40bdc7063b08b9da9711"}}}`,
-	StreamDonate: (permLink: string, type: string, count: number, message: string) => `{"operationName":"StreamDonate","variables":{"input":{"permlink":"${permLink}","type":"${type}","count":${count},"message":"${message}"}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"42dbd0f6f50503b37cd48e4cc76aa7d0bb9f6c3f3dea48567951e856b4d93788"}}}`,
+	StreamDonate: (permLink: string, type: string, count: number, message: string) => `{"operationName":"StreamDonate","variables":{"input":{"permlink":"${permLink}","type":"${type}","count":${count},"message":"${message}"}},"query":"mutation StreamDonate($input: DonateInput!){donate(input:$input){id recentCount expireDuration err{code message}}}"}`,
 	StreamMessageSubscription: (linoUsername: string) => `{"type":"start","payload":{"variables":{"streamer":"${linoUsername}"},"operationName":"StreamMessageSubscription","query":"subscription StreamMessageSubscription($streamer:String!){streamMessageReceived(streamer:$streamer){type ... on ChatGift{id gift amount recentCount expireDuration ...VStreamChatSenderInfoFrag}... on ChatHost{id viewer...VStreamChatSenderInfoFrag}... on ChatSubscription{id month...VStreamChatSenderInfoFrag}... on ChatChangeMode{mode}... on ChatText{id content ...VStreamChatSenderInfoFrag}... on ChatFollow{id ...VStreamChatSenderInfoFrag}... on ChatDelete{ids}... on ChatBan{id ...VStreamChatSenderInfoFrag}... on ChatModerator{id ...VStreamChatSenderInfoFrag add}... on ChatEmoteAdd{id ...VStreamChatSenderInfoFrag emote}}}fragment VStreamChatSenderInfoFrag on SenderInfo{subscribing role roomRole sender{id username displayname avatar partnerStatus}}"}}`,
 	TopContributors: (displayName: string, first: number, rule: string) => `{"operationName":"TopContributors","variables":{"displayname":"${displayName}","first":${first},"rule":"${rule}","queryStream":false},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"e0b23582f5f8fecb9ccdc607cc9a0b56572af37692915e6fe3ac4daf21bb389b"}}}`,
 	UnbanStreamChatUser: (displayName: string, linoUsername: string) => `{"operationName":"UnbanStreamChatUser","variables":{"streamer":"${linoUsername}","username":"${displayName}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"574e9a8db47ff719844359964d6108320e4d35f0378d7f983651d87b315d4008"}}}`,
@@ -66,7 +67,7 @@ interface IWebResponse {
 	data: any;
 	errors: string[];
 }
-const request = (authorization, data) => new Promise<IWebResponse>(resolve => {
+const request = (authorization, data) => new Promise<IWebResponse>((resolve, reject) => {
 	axios.request({
 		data,
 		headers: { authorization },
@@ -75,9 +76,7 @@ const request = (authorization, data) => new Promise<IWebResponse>(resolve => {
 	}).then(res => res as unknown).then(res => res as IWebResponse).then(res => {
 		if (res.errors !== undefined) throw new Error(res.errors[0]);
 		resolve(res.data);
-	}).catch(e => {
-		throw new Error('Request error: ' + e);
-	});
+	}).catch(reject);
 });
 
 /**
@@ -357,13 +356,8 @@ module.exports = class Dlive extends EventEmitter {
 	/**
 	 * @returns {Promise} - Returns Display Name of the authKey.
 	 */
-	getMeDisplayName(): Promise<any> {
-		interface IMeGlobalResponse {
-			me: {
-				displayname: string;
-			};
-		}
-		return this.getMeGlobal().then(res => res as IMeGlobalResponse).then(res => res.me.displayname).catch(err => err);
+	getMeDisplayName(): any {
+		return request(this.authKey, queries.MeDisplayname()).then(res => res.data.me.displayname as string).catch(e => e);
 	}
 
 	async getLivestreamChatroomInfo(displayName: string = this.displayName, limit: number = 20) {
@@ -410,12 +404,12 @@ module.exports = class Dlive extends EventEmitter {
 	 * @param {string} sortedBy - Sort method, default: AZ
 	 * @returns {Promise} - List of users who are following displayName
 	 */
-	async getLivestreamProfileFollowing(displayName: string = this.displayName, first: number = 20, sortedBy: string = 'AZ'): Promise<any> {
+	async getLivestreamProfileFollowing(displayName: string = this.displayName, first: number = 20, sortedBy: string = 'AZ', after: number = 0): Promise<any> {
 		if (!displayName) displayName = await this.getMeDisplayName();
 		return new Promise((resolve, reject) => {
-			request(this.authKey, queries.LivestreamProfileFollowing(displayName, first, sortedBy)).then(res => {
-				res.errors === undefined ? resolve(res.data.userByDisplayName.following) : reject(res.errors);
-			});
+			request(this.authKey, queries.LivestreamProfileFollowing(displayName, first, sortedBy, after)).then(res => {
+				res.errors === undefined ? resolve(res.data.userByDisplayName.followers) : reject(res.errors);
+			}).catch(reject);
 		});
 	}
 
@@ -681,9 +675,10 @@ module.exports = class Dlive extends EventEmitter {
 	 * @param {String} linoUsername - LINO username of the user you wish to promote
 	 * @returns {Promise} - Was the moderator role added successfully?
 	 */
-	setModerator(linoUsername: string): Promise<any> {
+	async setModerator(linoUsername: string, streamer: string = null): Promise<any> {
+		if (!streamer) streamer = await this.getLinoUsername(this.displayName);
 		return new Promise((resolve, reject) => {
-			request(this.authKey, queries.AddModerator(linoUsername)).then(res => {
+			request(this.authKey, queries.AddModerator(linoUsername, streamer)).then(res => {
 				res.data.moderatorAdd.err ? reject(res.data.moderatorAdd.err) : resolve(true);
 			});
 		});
