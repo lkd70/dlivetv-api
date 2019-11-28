@@ -6,7 +6,6 @@ import * as WebSocket from 'ws';
 import * as Interfaces from './interfaces';
 
 const queries = {
-	MeDisplayname: () => `{"query": "query{me{displayname}}"}`,
 	AddGiftSub: (streamer: string, toUser: string, count: number = 1) => `{"operationName":"QUERY","variables":{"streamer":"${streamer}", "toUser":"${toUser}", "count":${count}}, "query": "mutation AddGiftSub($streamer:String!,$toUser:String,$count:Int){giftSub(streamer:$streamer,toUser:$toUser,count:$count){err{code message}}}"}`,
 	AddGiftSubClaim: (streamer: string) => `{"operationName":"AddGiftSubClaim","variables":{"streamer":"${streamer}"}, "query": "mutation AddGiftSubClaim($streamer:String!){giftSubClaim(streamer:$streamer){err{code message}}}"}`,
 	AddModerator: (username: string, streamer: string) => `{"operationName":"AddModerator","variables":{"username":"${username}", "streamer":"${streamer}"}, "query": "mutation AddModerator($username:String!,$streamer:String){moderatorAdd(username:$username,streamer:$streamer){err{code}}}"}`,
@@ -38,6 +37,7 @@ const queries = {
 	LivestreamsLanguages: () => '{"operationName":"LivestreamsLanguages","variables":{},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"9eb5e755459bcf3336b50c2d83a6b44fd17f1c04fdda32f1a40c5ced959974ea"}}}',
 	MeBalance: () => '{"operationName":"MeBalance","variables":{},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"6e6794dcd570ff8ed544d45483971969db2c8e968a3a082645ae92efa124f3ec"}}}',
 	MeDashboard: () => '{"operationName":"MeDashboard","variables":{"isLoggedIn":true},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"8a4f67c0945b443f547d545c8d15e20548624308857e17b027f15d8f7cacfa97"}}}',
+	MeDisplayname: () => `{"query": "query{me{displayname}}"}`,
 	MeGlobal: () => '{"operationName":"MeGlobal","variables":{},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"c69723c66973bb8f544f11fcf375be71217ffd932ff72cc40f22252a076f84e2"}}}',
 	MeLivestream: () => '{"operationName":"MeLivestream","variables":{"isLoggedIn":true},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"73453911d90c67a6ba7d9fec2a5be05cc035c09d96b9b01016bd3e7210336cd6"}}}',
 	MePartnerProgress: (isNotGlobalPartner: boolean) => `{"operationName":"MePartnerProgress","variables":{"isNotGlobalPartner":${isNotGlobalPartner}},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"2b7bb8b4437d68c4bc93d48af58b9a426b427b9003858235f7b13005aa85a86a"}}}`,
