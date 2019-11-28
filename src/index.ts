@@ -398,6 +398,14 @@ module.exports = class Dlive extends EventEmitter {
 		});
 	}
 
+	async sendCustomQuery(queryString: string): Promise<any> {
+		return new Promise((resolve, reject) => {
+			request(this.authKey, queryString).then(res => {
+				res.errors === undefined ? resolve(res) : reject(res.errors);
+			}).catch(reject);
+		});
+	}
+
 	/**
 	 * @param {String} displayName - Dlive username to return the following of
 	 * @param {Number} first - Number of results to return. Default: 20
