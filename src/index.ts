@@ -35,6 +35,7 @@ const queries = {
 	LivestreamProfileWallet: (displayName: string, first: number, after: number) => `{"operationName":"LivestreamProfileWallet","variables":{"displayname":"${displayName}","first":${first},"isLoggedIn":true,"after":"${after}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"33f93541f9c5eda40a8b54c152246f953564c441361eb3b729373ae89165b798"}}}`,
 	LivestreamTreasureChestWinners: (displayName: string) => `{"operationName":"LivestreamTreasureChestWinners","variables":{"displayname":"${displayName}","isLoggedIn":true},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"d4bf8568e7ba9db7acc44269c2c08b18ccfb7a271c376eb4a5d6d9485acd51c3"}}}`,
 	LivestreamsLanguages: () => '{"operationName":"LivestreamsLanguages","variables":{},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"9eb5e755459bcf3336b50c2d83a6b44fd17f1c04fdda32f1a40c5ced959974ea"}}}',
+	LoginWithEmail: (email: string, password: string) => `{"query":"mutation($email: String!, $password: String!){loginWithEmail(email:$email,password:$password){me{private{accessToken}}err{code}}}","variables":{"email":"${email}","password":"${password}"}}`,
 	MeBalance: () => '{"operationName":"MeBalance","variables":{},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"6e6794dcd570ff8ed544d45483971969db2c8e968a3a082645ae92efa124f3ec"}}}',
 	MeDashboard: () => '{"operationName":"MeDashboard","variables":{"isLoggedIn":true},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"8a4f67c0945b443f547d545c8d15e20548624308857e17b027f15d8f7cacfa97"}}}',
 	MeDisplayname: () => `{"query": "query{me{displayname}}"}`,
@@ -58,7 +59,7 @@ const queries = {
 
 /**
  * POST request to Dlive
- * @param {string} authorization - Your authentication key
+ * @param {string | undefined} authorization - Your authentication key
  * @param {string} data - stringified JSON POST data
  * @returns {object} - Axios response object
  */
@@ -68,9 +69,10 @@ interface IWebResponse {
 	errors: string[];
 }
 const request = (authorization, data) => new Promise<IWebResponse>((resolve, reject) => {
+	const headers = (typeof authorization !== 'undefined') ? { authorization } : {};
 	axios.request({
 		data,
-		headers: { authorization },
+		headers,
 		method: 'post',
 		url: 'https://graphigo.prd.dlive.tv:443',
 	}).then(res => res as unknown).then(res => res as IWebResponse).then(res => {
@@ -78,6 +80,12 @@ const request = (authorization, data) => new Promise<IWebResponse>((resolve, rej
 		resolve(res.data);
 	}).catch(reject);
 });
+
+interface ILoginDetails {
+	email: string;
+	password: string;
+	fallback_authkey: string;
+}
 
 /**
  * Dlive class definition
@@ -92,9 +100,9 @@ module.exports = class Dlive extends EventEmitter {
 	 * @param {string} authKey - Your authentication key
 	 * @param {string} displayName - Your Dlive username.
 	 */
-	constructor(authKey: string, displayName: string = null) {
+	constructor(authKey: string | ILoginDetails , displayName: string = null) {
 		super();
-		this.start(displayName, authKey);
+		this.init(displayName, authKey);
 	}
 
 	/**
@@ -721,9 +729,31 @@ module.exports = class Dlive extends EventEmitter {
 	 * @param {String} displayName - Display name to start the class with
 	 * @param {string} authKey - Your authentication key
 	 */
-	async start(displayName: string, authKey: string) {
+	async init(displayName: string, authKey: string | ILoginDetails) {
 		const _this = this;
-		_this.authKey = authKey;
+		if (typeof authKey === 'string') {
+			_this.authKey = authKey;
+		} else {
+			const { email, password } = authKey;
+			await request(undefined, queries.LoginWithEmail(email, password)).then(r => {
+				if (r.data.loginWithEmail.me) {
+					_this.authKey = r.data.loginWithEmail.me.private.accessToken;
+				} else {
+					if (r.data.loginWithEmail.err.code === 1433) {
+						if (typeof authKey.fallback_authkey !== 'undefined') {
+							console.warn(`Login with email failed due to captcha - using fallback authkey`);
+							_this.authKey = authKey.fallback_authkey;
+						} else {
+							throw new Error('Login with email failed - Captcha received and no fallback authkey is set');
+						}
+					} else {
+						throw new Error('Error whilst logging in with email - possible captcha encountered');
+					}
+				}
+			}).catch(e => {
+				throw new Error('Error whilst logging in with email: ' + e);
+			});
+		}
 		if (displayName === null) displayName = await this.getMeDisplayName();
 		_this.displayName = displayName;
 		_this.linoUsername = await this.getLinoUsername(_this.displayName);
@@ -732,6 +762,7 @@ module.exports = class Dlive extends EventEmitter {
 		_this.client.on('open', () => {
 			_this.client.send('{"type": "connection_init"}');
 			_this.client.send(queries.StreamMessageSubscription(_this.linoUsername));
+			_this.emit('ready');
 
 			_this.client.on('message', res => {
 				interface IMsgResponse {
