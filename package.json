@@ -1,6 +1,6 @@
 {
   "name": "dlivetv-api",
-  "version": "2.1.20",
+  "version": "2.1.21",
   "description": "A broad reaching API for DLive",
   "main": "./dist/index.js",
   "repository": "git+https://github.com/lkd70/dlivetv-api.git",
@@ -19,14 +19,14 @@
   "homepage": "https://github.com/lkd70/dlivetv-api#readme",
   "dependencies": {
     "axios": "^0.18.1",
-    "ws": "^7.2.0"
+    "ws": "^7.2.1"
   },
   "devDependencies": {
-    "@types/node": "^12.12.5",
-    "@types/ws": "^6.0.3",
+    "@types/node": "^12.12.21",
+    "@types/ws": "^6.0.4",
     "babel-minify": "^0.5.1",
-    "tslint": "^5.20.0",
-    "typescript": "^3.6.4"
+    "tslint": "^5.20.1",
+    "typescript": "^3.7.4"
   },
   "private": false,
   "scripts": {
